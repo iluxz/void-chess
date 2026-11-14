@@ -4,10 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>void chess</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
 <canvas id="particles"></canvas>
@@ -17,7 +14,7 @@
 </div>
 <div id="game">
   <div id="boardWrap">
-    <div id="board"></div>
+    <canvas id="board3d"></canvas>
   </div>
   <div id="sidebar">
     <div id="objPanel">
@@ -35,13 +32,13 @@
       <button id="hintBtn">hint</button>
       <button id="accuseBtn">accuse</button>
       <button id="cheatBtn" title="make an illegal move">cheat</button>
-      <button id="newGameBtn">new game</button>
       <button id="resignBtn">resign</button>
+      <button id="newGameBtn">new game</button>
     </div>
   </div>
 </div>
 <button id="bookBtn">📖 rulebook</button>
-<div id="legend">you = white (bottom) | obj = blue (top) | click to move | obj can cheat. so can you. but dont get caught.</div>
+<div id="legend">drag to rotate | scroll to zoom | click pieces to move | obj can cheat. so can you.</div>
 <div id="accuseOverlay">
   <h2 id="accuseTitle">ACCUSED</h2>
   <p id="accuseMsg"></p>
@@ -62,12 +59,6 @@
         <div class="open-spine"></div>
         <div class="page-left" id="pageLeft"><div class="page-content" id="pageLeftContent"></div></div>
         <div class="page-right" id="pageRight"><div class="page-content" id="pageRightContent"></div></div>
-        <div class="page-flipper" id="pageFlipper">
-          <div class="flip-front" id="flipFront"></div>
-          <div class="flip-back" id="flipBack"></div>
-        </div>
-        <div class="flip-shadow" id="flipShadow"></div>
-        <div class="page-corner" id="pageCorner" onclick="nextPage()"></div>
         <div class="book-nav">
           <button id="bookPrev">◀ prev</button>
           <span class="page-indicator" id="pageIndicator">1 / 1</span>
@@ -80,6 +71,6 @@
 <script src="audio.js?v=2"></script>
 <script src="engine.js?v=2"></script>
 <script src="ai.js?v=2"></script>
-<script src="chess-ui.js?v=3"></script>
+<script src="chess-ui.js?v=5"></script>
 </body>
 </html>
