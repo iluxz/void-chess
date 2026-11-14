@@ -32,6 +32,7 @@ boardContainer.appendChild(boardPlane);
 
 // Attach click handlers directly to each square
 function attachClickHandlers() {
+  console.log('attachClickHandlers called, squares:', boardPlane.querySelectorAll('.sq3d').length);
   const sqs = boardPlane.querySelectorAll('.sq3d');
   sqs.forEach((sq, idx) => {
     const r = Math.floor(idx / 8);
