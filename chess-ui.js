@@ -71,11 +71,9 @@ boardContainer.addEventListener('wheel', (e) => {
 boardContainer.addEventListener('contextmenu', (e) => e.preventDefault());
 boardContainer.style.cursor = 'grab';
 
-// ===== OBJ (CSS 3D cube) =====
-const objContainer = document.createElement('div');
-objContainer.id = 'obj3d';
-objContainer.style.cssText = 'position:absolute;bottom:10px;right:10px;width:80px;height:80px;perspective:200px;transform-style:preserve-3d;';
-const objCube = document.createElement('div');
+// ===== OBJ removed =====
+const _objRemoved = true;
+if (false) { const objCube = document.createElement('div');
 objCube.style.cssText = 'position:relative;width:100%;height:100%;transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(30deg);animation:objSpin 8s linear infinite;';
 const faces = [
   { transform: 'translateZ(40px)', bg: 'rgba(136,136,136,0.3)' },
@@ -114,6 +112,7 @@ function animateInner() {
   requestAnimationFrame(animateInner);
 }
 animateInner();
+} // close if(false)
 // obj removed
 
 // Add CSS animation
