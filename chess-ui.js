@@ -1,6 +1,22 @@
 // chess-ui.js — void chess CSS 3D rendering, events, book UI, particles
 // 3D board with CSS transforms, spinnable camera, obj
 
+// ===== LEGAL MOVES (needs engine.js) =====
+function getLegalMoves(r, c, bs) {
+  const piece = bs[r][c]; if (!piece) return [];
+  const pseudo = getMoves(r, c, bs);
+  return pseudo.filter(m => {
+    const saved = { board: bs.map(row => row.map(p => p ? { ...p } : null)), castling: { ...castling }, enPassant: enPassant ? { ...enPassant } : null, moveCount };
+    makeMove(m.from, m.to, m.special, false);
+    const inCheck = isCheck(piece.color);
+    board = saved.board.map(row => row.map(p => p ? { ...p } : null));
+    castling = { ...saved.castling };
+    enPassant = saved.enPassant ? { ...saved.enPassant } : null;
+    moveCount = saved.moveCount;
+    return !inCheck;
+  });
+}
+
 // ===== 3D BOARD SETUP =====
 console.log('chess-ui.js loaded');
 const boardWrap = document.getElementById('boardWrap');
