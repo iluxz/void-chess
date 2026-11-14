@@ -1,4 +1,5 @@
 // engine.js — void chess game logic
+console.log('engine.js loaded');
 const WHITE='w',BLACK='b';
 const objLines=['...huh. you want to play chess? fine. but i make the rules.','i am the void. i do not play fairly.','your move. make it count. it won\'t matter.','interesting. wrong, but interesting.','i have seen ten thousand games. you have seen none.','the board is mine. you are just visiting.','...did you just do that? bold. stupid, but bold.','i could win this in three moves. but where is the fun in that.','you are losing. you just don\'t know it yet.','checkmate is coming. not today. but soon.','that was a mistake. i will remember it.','are you even trying?','...ok that was actually good. don\'t let it go to your head.'];
 function objSpeak(text){const el=document.getElementById('objText');el.textContent='';let i=0;const iv=setInterval(()=>{if(i<text.length){el.textContent+=text[i];i++}else clearInterval(iv)},35);}

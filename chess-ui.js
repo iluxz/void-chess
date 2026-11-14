@@ -2,7 +2,7 @@
 // 3D board with CSS transforms, spinnable camera, obj
 
 // ===== 3D BOARD SETUP =====
-// chess-ui.js loaded
+console.log('chess-ui.js loaded');
 const boardWrap = document.getElementById('boardWrap');
 const board3d = document.getElementById('board3d');
 // Replace canvas with a div-based 3D board
