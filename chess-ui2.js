@@ -210,10 +210,10 @@ function onCellClick(r, c) {
       document.getElementById('status').textContent = 'obj thinking...'; document.getElementById('status').style.color = '#5fa8d3';
       setTimeout(() => { aiMove(); turn = WHITE; }, 500 + Math.random() * 400); selected = null; validMoves = []; return;
     }
-    if (piece && piece.color === WHITE) { selected = { r, c }; validMoves = getLegalMoves(r, c, board); renderBoard(); return; }
+    if (piece && piece.color === WHITE) { selected = { r, c }; validMoves = getMoves(r, c, board).filter(m => { const saved = { board: board.map(row => row.map(p => p ? { ...p } : null)), castling: { ...castling }, enPassant: enPassant ? { ...enPassant } : null, moveCount }; makeMove(m.from, m.to, m.special, false); const inCheck = isCheck(piece.color); board = saved.board.map(row => row.map(p => p ? { ...p } : null)); castling = { ...saved.castling }; enPassant = saved.enPassant ? { ...saved.enPassant } : null; moveCount = saved.moveCount; return !inCheck; }); renderBoard(); return; }
     selected = null; validMoves = []; renderBoard();
   } else {
-    if (piece && piece.color === WHITE) { selected = { r, c }; validMoves = getLegalMoves(r, c, board); renderBoard(); }
+    if (piece && piece.color === WHITE) { selected = { r, c }; validMoves = getMoves(r, c, board).filter(m => { const saved = { board: board.map(row => row.map(p => p ? { ...p } : null)), castling: { ...castling }, enPassant: enPassant ? { ...enPassant } : null, moveCount }; makeMove(m.from, m.to, m.special, false); const inCheck = isCheck(piece.color); board = saved.board.map(row => row.map(p => p ? { ...p } : null)); castling = { ...saved.castling }; enPassant = saved.enPassant ? { ...saved.enPassant } : null; moveCount = saved.moveCount; return !inCheck; }); renderBoard(); }
   }
 }
 
