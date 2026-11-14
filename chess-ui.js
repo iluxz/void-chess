@@ -22,7 +22,9 @@ boardPlane.addEventListener('click', (e) => {
   const c = parseInt(sq.dataset.c);
   if (isNaN(r) || isNaN(c)) return;
   window.__lastClick = { r, c, time: Date.now() };
+  window.__lastClick = { r, c, time: Date.now() };
   onCellClick(r, c);
+  window.__afterClick = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
   window.__afterClick = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
 });
 if (board3d && board3d.parentNode === boardWrap) {
@@ -178,7 +180,7 @@ function renderBoard() {
   if (cb) { cb.innerHTML = ''; for (const p of capturedPieces.b) { const s = document.createElement('span'); s.className = 'piece ' + (p.color === WHITE ? 'white' : 'black'); s.textContent = pieceSymbols[p.type][p.color]; s.style.fontSize = '18px'; cb.appendChild(s); } }
 }
 
-function onCellClick(r, c) {
+window.onCellClick = function(r, c) {
   if (gameOver || turn !== WHITE) return;
   const piece = board[r][c];
   if (selected) {

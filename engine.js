@@ -3,7 +3,7 @@ const WHITE='w',BLACK='b';
 const objLines=['...huh. you want to play chess? fine. but i make the rules.','i am the void. i do not play fairly.','your move. make it count. it won\'t matter.','interesting. wrong, but interesting.','i have seen ten thousand games. you have seen none.','the board is mine. you are just visiting.','...did you just do that? bold. stupid, but bold.','i could win this in three moves. but where is the fun in that.','you are losing. you just don\'t know it yet.','checkmate is coming. not today. but soon.','that was a mistake. i will remember it.','are you even trying?','...ok that was actually good. don\'t let it go to your head.'];
 function objSpeak(text){const el=document.getElementById('objText');el.textContent='';let i=0;const iv=setInterval(()=>{if(i<text.length){el.textContent+=text[i];i++}else clearInterval(iv)},35);}
 function initBoard(){const b=Array(8).fill(null).map(()=>Array(8).fill(null));const back=['R','N','B','Q','K','B','N','R'];for(let c=0;c<8;c++){b[0][c]={type:back[c],color:BLACK};b[1][c]={type:'P',color:BLACK};b[6][c]={type:'P',color:WHITE};b[7][c]={type:back[c],color:WHITE};}return b;}
-let board=initBoard(),turn=WHITE,selected=null,validMoves=[],lastMove=null,gameOver=false;
+var board=initBoard(),turn=WHITE,selected=null,validMoves=[],lastMove=null,gameOver=false;
 let moveHistory=[],castling={wK:true,wQ:true,bK:true,bQ:true},enPassant=null;
 let capturedPieces={w:[],b:[]},moveCount=0,hintMove=null;
 function inB(r,c){return r>=0&&r<8&&c>=0&&c<8}
