@@ -18,6 +18,7 @@ function getLegalMoves(r, c, bs) {
 }
 
 // ===== 3D BOARD SETUP =====
+console.log('chess-ui.js executing...');
 // chess-ui.js loaded
 const boardWrap = document.getElementById('boardWrap');
 const board3d = document.getElementById('board3d');
