@@ -114,8 +114,7 @@ function animateInner() {
   requestAnimationFrame(animateInner);
 }
 animateInner();
-objContainer.appendChild(objCube);
-document.body.appendChild(objContainer);
+// obj removed
 
 // Add CSS animation
 const style = document.createElement('style');
