@@ -21,7 +21,9 @@ boardPlane.addEventListener('click', (e) => {
   const r = parseInt(sq.dataset.r);
   const c = parseInt(sq.dataset.c);
   if (isNaN(r) || isNaN(c)) return;
+  window.__lastClick = { r, c, time: Date.now() };
   onCellClick(r, c);
+  window.__afterClick = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
 });
 if (board3d && board3d.parentNode === boardWrap) {
   boardWrap.replaceChild(boardContainer, board3d);
@@ -169,6 +171,7 @@ function renderBoard() {
       sq.appendChild(span);
     }
   });
+  window.__gameState = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
   // update captured pieces
   const cw = document.getElementById('capturedWhite'); const cb = document.getElementById('capturedBlack');
   if (cw) { cw.innerHTML = ''; for (const p of capturedPieces.w) { const s = document.createElement('span'); s.className = 'piece ' + (p.color === WHITE ? 'white' : 'black'); s.textContent = pieceSymbols[p.type][p.color]; s.style.fontSize = '18px'; cw.appendChild(s); } }
