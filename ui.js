@@ -112,12 +112,27 @@ function nextPage(){
   const shadow=document.getElementById('flipShadow');
   const front=document.getElementById('flipFront');
   const back=document.getElementById('flipBack');
+  // Show flipper
+  flipper.classList.add('active');
+  // Set front content to current right page
   const currentPageData=bookPages[currentPage+1];
   if(currentPageData){front.innerHTML='';const h=document.createElement('h3');h.textContent=currentPageData.title;front.appendChild(h);for(const r of currentPageData.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;front.appendChild(div);}}
+  // Set back content to next spread's left page
   const nextPageData=bookPages[currentPage+2];
   if(nextPageData){back.innerHTML='';const h=document.createElement('h3');h.textContent=nextPageData.title;back.appendChild(h);const half=Math.ceil(nextPageData.rules.length/2);for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+nextPageData.rules[i].type;div.textContent=nextPageData.rules[i].text;back.appendChild(div);}}
-  shadow.classList.add('show');flipper.classList.add('flipping');
-  setTimeout(()=>{currentPage++;flipper.classList.remove('flipping');shadow.classList.remove('show');renderBookPage();isFlipping=false;},800);
+  shadow.classList.add('show');
+  // Force reflow then animate
+  void flipper.offsetWidth;
+  flipper.classList.add('flipping');
+  setTimeout(()=>{
+    currentPage++;
+    flipper.classList.remove('flipping');
+    flipper.classList.remove('active');
+    shadow.classList.remove('show');
+    front.innerHTML='';back.innerHTML='';
+    renderBookPage();
+    isFlipping=false;
+  },800);
 }
 function prevPage(){
   if(isFlipping||currentPage<=0)return;
@@ -126,14 +141,29 @@ function prevPage(){
   const shadow=document.getElementById('flipShadow');
   const front=document.getElementById('flipFront');
   const back=document.getElementById('flipBack');
+  flipper.classList.add('active');
+  // For prev, we flip from left to right
+  flipper.style.transformOrigin='right center';
+  flipper.style.transform='rotateY(180deg)';
   const prevPageData=bookPages[currentPage-1];
   if(prevPageData){front.innerHTML='';const h=document.createElement('h3');h.textContent=prevPageData.title;front.appendChild(h);const half=Math.ceil(prevPageData.rules.length/2);for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+prevPageData.rules[i].type;div.textContent=prevPageData.rules[i].text;front.appendChild(div);}}
   const currentPageData=bookPages[currentPage];
   if(currentPageData){back.innerHTML='';const h=document.createElement('h3');h.textContent=currentPageData.title;back.appendChild(h);for(const r of currentPageData.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;back.appendChild(div);}}
-  flipper.style.transformOrigin='right center';flipper.style.transform='rotateY(180deg)';
   shadow.classList.add('show');
-  requestAnimationFrame(()=>{flipper.style.transition='transform .8s cubic-bezier(.35,0,.25,1)';flipper.style.transform='rotateY(0deg)';});
-  setTimeout(()=>{currentPage--;flipper.style.transform='';flipper.style.transformOrigin='left center';flipper.style.transition='';shadow.classList.remove('show');renderBookPage();isFlipping=false;},800);
+  void flipper.offsetWidth;
+  flipper.style.transition='transform .8s cubic-bezier(.35,0,.25,1)';
+  flipper.style.transform='rotateY(0deg)';
+  setTimeout(()=>{
+    currentPage--;
+    flipper.style.transform='';
+    flipper.style.transformOrigin='left center';
+    flipper.style.transition='';
+    flipper.classList.remove('active');
+    shadow.classList.remove('show');
+    front.innerHTML='';back.innerHTML='';
+    renderBookPage();
+    isFlipping=false;
+  },800);
 }
 function updateRulebook(){buildBookPages();}
 function logRule(text){const log=document.getElementById('ruleLog');const div=document.createElement('div');div.textContent='> '+text;log.appendChild(div);log.scrollTop=log.scrollHeight;}
