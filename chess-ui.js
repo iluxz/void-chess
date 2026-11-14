@@ -55,6 +55,7 @@ function getLegalMoves(r,c,bs){
 }
 function onCellClick(r,c){
   if(gameOver||turn!==WHITE)return;
+  console.log('onCellClick:', r, c, 'selected:', selected ? selected.r+','+selected.c : 'null', 'board[r][c]:', board[r][c]?.type);
   const piece=board[r][c];
   if(selected){
     const move=validMoves.find(m=>m.to.r===r&&m.to.c===c);
