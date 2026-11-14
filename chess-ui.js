@@ -196,7 +196,7 @@ function renderBoard() {
   if (cb) { cb.innerHTML = ''; for (const p of capturedPieces.b) { const s = document.createElement('span'); s.className = 'piece ' + (p.color === WHITE ? 'white' : 'black'); s.textContent = pieceSymbols[p.type][p.color]; s.style.fontSize = '18px'; cb.appendChild(s); } }
 }
 
-window.onCellClick = function(r, c) {
+function onCellClick(r, c) {
   if (gameOver || turn !== WHITE) return;
   const piece = board[r][c];
   if (selected) {
@@ -322,3 +322,4 @@ document.getElementById('bookNext').addEventListener('click', nextPage);
 document.getElementById('bookOverlay').addEventListener('click', (e) => { if (e.target === document.getElementById('bookOverlay')) closeBook(); });
 newGame();
 setInterval(() => { if (Math.random() < 0.12 && !gameOver) objSpeak(objLines[Math.floor(Math.random() * objLines.length)]); }, 25000);
+window.onCellClick = onCellClick;
