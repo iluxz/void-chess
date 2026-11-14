@@ -197,6 +197,7 @@ function renderBoard() {
 }
 
 function onCellClick(r, c) {
+  console.log('onCellClick called:', r, c, 'turn:', turn, 'gameOver:', gameOver, 'selected:', selected ? selected.r+','+selected.c : 'null');
   if (gameOver || turn !== WHITE) return;
   const piece = board[r][c];
   if (selected) {
