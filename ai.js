@@ -73,7 +73,7 @@ function aiMove(){
   if(gameOver)return;
   if(Math.random()<0.15)objDoCheat();
   const moves=[];
-  for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK){const mvs=getMoves(r,c,board);for(const m of mvs)moves.push(m);}}
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK){const mvs=getLegalMoves(r,c,board);for(const m of mvs)moves.push(m);}}
   if(objCheating&&objCheatType==='illegal_move'){const blacks=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK)blacks.push({r,c});}if(blacks.length>0){const p=blacks[Math.floor(Math.random()*blacks.length)];const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const t=empty[Math.floor(Math.random()*empty.length)];moves.push({from:p,to:t,capture:false,special:null});}}}
   if(moves.length===0){if(isCheck(BLACK))endGame('checkmate! you win... for now.');else endGame('stalemate. draw.');return;}
   const captures=moves.filter(m=>m.capture);
@@ -82,7 +82,7 @@ function aiMove(){
   makeMove(move.from,move.to,move.special);renderBoard(true);
   if(isCheck(WHITE)){playCheck();document.getElementById('status').textContent='check!';document.getElementById('status').style.color='#ff4444';}
   else{document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';}
-  let playerMoves=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)playerMoves+=getMoves(r,c,board).length;}
+  let playerMoves=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)playerMoves+=getLegalMoves(r,c,board).length;}
   if(playerMoves===0){if(isCheck(WHITE))endGame('checkmate. i win. as expected.');else endGame('stalemate. draw.');}
   if(gameState.knightQueen>0)gameState.knightQueen--;
   if(gameState.rookPhase>0)gameState.rookPhase--;

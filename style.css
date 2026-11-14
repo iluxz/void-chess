@@ -51,6 +51,7 @@ button:hover{border-color:#769656;background:#4a4846;color:#fff}
 #accuseBtn{border-color:#ff4444;background:rgba(255,68,68,0.08)}
 #cheatBtn{border-color:#ff6600;background:rgba(255,102,0,0.08);font-size:10px}
 #newGameBtn{border-color:#00ff88;background:rgba(0,255,136,0.08)}
+#resignBtn{border-color:#ff4444;background:rgba(255,68,68,0.08)}
 #particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
 canvas{display:block}
 #legend{position:fixed;bottom:8px;left:10px;font-size:10px;color:#666;z-index:10}

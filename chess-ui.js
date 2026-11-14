@@ -71,6 +71,25 @@ function renderBoard(animate){
   if(cw){cw.innerHTML='';for(const p of capturedPieces.w){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cw.appendChild(s);}}
   if(cb){cb.innerHTML='';for(const p of capturedPieces.b){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cb.appendChild(s);}}
 }
+function isLegalMove(move,bs){
+  const saved={board:bs.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};
+  makeMove(move.from,move.to,move.special,false);
+  const legal=!isCheck(move.from? (bs[move.from.r][move.from.c]?.color||'w') : 'w');
+  // determine color from the piece
+  board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;
+  return legal;
+}
+function getLegalMoves(r,c,bs){
+  const piece=bs[r][c];if(!piece)return[];
+  const pseudo=getMoves(r,c,bs);
+  return pseudo.filter(m=>{
+    const saved={board:bs.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};
+    makeMove(m.from,m.to,m.special,false);
+    const inCheck=isCheck(piece.color);
+    board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;
+    return !inCheck;
+  });
+}
 function onCellClick(r,c){
   if(gameOver||turn!==WHITE)return;
   const piece=board[r][c];
@@ -83,10 +102,10 @@ function onCellClick(r,c){
       document.getElementById('status').textContent='obj thinking...';document.getElementById('status').style.color='#5fa8d3';
       setTimeout(()=>{aiMove();turn=WHITE;},500+Math.random()*400);selected=null;validMoves=[];return;
     }
-    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getMoves(r,c,board);renderBoard();return;}
+    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();return;}
     selected=null;validMoves=[];renderBoard();
   }else{
-    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getMoves(r,c,board);renderBoard();}
+    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();}
   }
 }
 
@@ -192,6 +211,7 @@ document.getElementById('hintBtn').addEventListener('click',getHint);
 document.getElementById('accuseBtn').addEventListener('click',playerAccuseObj);
 document.getElementById('cheatBtn').addEventListener('click',playerDoCheat);
 document.getElementById('newGameBtn').addEventListener('click',newGame);
+document.getElementById('resignBtn').addEventListener('click',()=>{if(!gameOver){gameOver=true;document.getElementById('status').textContent='you resigned. obj wins.';playLose();objSpeak('you resigned. smart. but too late.');}});
 document.getElementById('bookBtn').addEventListener('click',openBook);
 document.getElementById('bookCover').addEventListener('click',openBook);
 document.getElementById('bookClose').addEventListener('click',closeBook);

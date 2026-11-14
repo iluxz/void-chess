@@ -107,7 +107,7 @@ function undoMove(){
 }
 function getHint(){
   if(gameOver||turn!==WHITE)return;
-  const allMoves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE){const mvs=getMoves(r,c,board);for(const m of mvs)allMoves.push(m);}}
+  const allMoves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE){const mvs=getLegalMoves(r,c,board);for(const m of mvs)allMoves.push(m);}}
   if(allMoves.length===0){objSpeak('no moves. you lose.');return;}
   const captures=allMoves.filter(m=>m.capture);
   let best=captures.length>0?captures[Math.floor(Math.random()*captures.length)]:allMoves[Math.floor(Math.random()*allMoves.length)];
