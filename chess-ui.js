@@ -25,8 +25,11 @@ bP:`<svg viewBox="0 0 45 45" xmlns="http://www.w3.org/2000/svg"><g fill="#1a1a2e
 
 // ===== RENDERING =====
 const pieceSymbols={'K':{w:'♔',b:'♚'},'Q':{w:'♕',b:'♛'},'R':{w:'♖',b:'♜'},'B':{w:'♗',b:'♝'},'N':{w:'♘',b:'♞'},'P':{w:'♙',b:'♟'}};
-function renderBoard(){
-  const boardEl=document.getElementById('board');boardEl.innerHTML='';
+function renderBoard(animate){
+  const boardEl=document.getElementById('board');
+  const animFrom = animate ? (lastMove ? lastMove.from : null) : null;
+  const animTo = animate ? (lastMove ? lastMove.to : null) : null;
+  boardEl.innerHTML='';
   for(let r=0;r<8;r++)for(let c=0;c<8;c++){
     const cell=document.createElement('div');
     cell.className='cell '+((r+c)%2===0?'light':'dark');
@@ -46,6 +49,23 @@ function renderBoard(){
     cell.addEventListener('click',()=>onCellClick(r,c));
     boardEl.appendChild(cell);
   }
+  // Animate the moved piece
+  if(animFrom&&animTo){
+    const cellSize=boardEl.offsetWidth/8;
+    const fromX=animFrom.c*cellSize,fromY=animFrom.r*cellSize;
+    const toX=animTo.c*cellSize,toY=animTo.r*cellSize;
+    const targetCell=boardEl.children[animTo.r*8+animTo.c];
+    const piece=targetCell?.querySelector('.piece');
+    if(piece){
+      const dx=fromX-toX,dy=fromY-toY;
+      piece.style.transition='none';
+      piece.style.transform='translate('+dx+'px,'+dy+'px)';
+      void piece.offsetWidth;
+      piece.style.transition='transform .2s cubic-bezier(.4,0,.2,1)';
+      piece.style.transform='translate(0,0)';
+      setTimeout(()=>{piece.style.transition='';piece.style.transform='';},210);
+    }
+  }
   // update captured pieces
   const cw=document.getElementById('capturedWhite');const cb=document.getElementById('capturedBlack');
   if(cw){cw.innerHTML='';for(const p of capturedPieces.w){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cw.appendChild(s);}}
@@ -59,7 +79,7 @@ function onCellClick(r,c){
     if(move){
       const kingPiece=board[selected.r][selected.c];
       if(kingPiece&&kingPiece.type==='K'&&gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c&&p.color===WHITE)){objSpeak('your king cannot take that piece. penalty rules.');return;}
-      makeMove(selected,{r,c},move.special);hintMove=null;renderBoard();turn=BLACK;
+      makeMove(selected,{r,c},move.special);hintMove=null;renderBoard(true);turn=BLACK;
       document.getElementById('status').textContent='obj thinking...';document.getElementById('status').style.color='#5fa8d3';
       setTimeout(()=>{aiMove();turn=WHITE;},500+Math.random()*400);selected=null;validMoves=[];return;
     }

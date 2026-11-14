@@ -15,7 +15,7 @@ function playerDoCheat(){
   const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c]||(board[r][c].color===BLACK))empty.push({r,c});}
   if(empty.length===0)return;
   const to=empty[Math.floor(Math.random()*empty.length)];
-  makeMove(from,to,null);renderBoard();
+  makeMove(from,to,null);renderBoard(true);
   if(Math.random()<0.3){setTimeout(()=>{objAccusePlayer();},1000);}
   else{setTimeout(()=>{playerCheating=false;},2000);}
   playMove();
@@ -79,7 +79,7 @@ function aiMove(){
   const captures=moves.filter(m=>m.capture);
   const pool=captures.length>0&&Math.random()<0.7?captures:moves;
   const move=pool[Math.floor(Math.random()*pool.length)];
-  makeMove(move.from,move.to,move.special);renderBoard();
+  makeMove(move.from,move.to,move.special);renderBoard(true);
   if(isCheck(WHITE)){playCheck();document.getElementById('status').textContent='check!';document.getElementById('status').style.color='#ff4444';}
   else{document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';}
   let playerMoves=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)playerMoves+=getMoves(r,c,board).length;}
