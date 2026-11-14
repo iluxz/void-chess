@@ -90,13 +90,30 @@ for (const f of faces) {
   face.style.cssText = `position:absolute;width:80px;height:80px;background:${f.bg};border:1px solid rgba(95,168,211,0.3);transform:${f.transform};backface-visibility:visible;`;
   objCube.appendChild(face);
 }
-// Inner cubes
+// Inner cubes - orbiting inside the outer cube
+const innerColors = ['#ff3333','#33ff33','#3333ff','#ffff33','#ff33ff','#33ffff','#ffffff','#888888'];
+const innerEls = [];
 for (let i = 0; i < 8; i++) {
   const inner = document.createElement('div');
-  const colors = ['#ff0000','#00ff00','#0000ff','#ffff00','#ff00ff','#00ffff','#ffffff','#888888'];
-  inner.style.cssText = `position:absolute;width:12px;height:12px;background:${colors[i]};opacity:0.7;transform:translate3d(${Math.cos(i/8*Math.PI*2)*20}px,${Math.sin(i/8*Math.PI*2)*20}px,0);`;
+  inner.style.cssText = `position:absolute;width:10px;height:10px;background:${innerColors[i]};opacity:0.9;border:1px solid ${innerColors[i]};box-shadow:0 0 6px ${innerColors[i]},0 0 12px ${innerColors[i]};transform-style:preserve-3d;`;
   objCube.appendChild(inner);
+  innerEls.push({ el: inner, index: i });
 }
+// Animate inner cubes to orbit inside the outer cube
+function animateInner() {
+  const time = performance.now() * 0.001;
+  innerEls.forEach((ic) => {
+    const i = ic.index;
+    const angle = (i / 8) * Math.PI * 2 + time * 0.5;
+    const radius = 18;
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    const y = Math.sin(angle * 2) * 6;
+    ic.el.style.transform = `translate3d(${x + 35}px, ${y + 35}px, ${z}px)`;
+  });
+  requestAnimationFrame(animateInner);
+}
+animateInner();
 objContainer.appendChild(objCube);
 document.body.appendChild(objContainer);
 
@@ -128,8 +145,9 @@ function renderBoard() {
       const span = document.createElement('span');
       span.className = 'piece ' + (piece.color === WHITE ? 'white' : 'black');
       span.textContent = pieceSymbols[piece.type][piece.color];
-      span.style.transform = 'rotateX(-55deg)'; // counter-rotate to face camera
+      span.style.transform = 'translateZ(2px) rotateX(-55deg)'; // raise above board + counter-rotate
       span.style.display = 'inline-block';
+      span.style.transformOrigin = 'center bottom';
       sq.appendChild(span);
     }
   });
