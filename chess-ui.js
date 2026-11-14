@@ -18,7 +18,7 @@ function getLegalMoves(r, c, bs) {
 }
 
 // ===== 3D BOARD SETUP =====
-console.log('chess-ui.js loaded');
+// chess-ui.js loaded
 const boardWrap = document.getElementById('boardWrap');
 const board3d = document.getElementById('board3d');
 // Replace canvas with a div-based 3D board
@@ -32,15 +32,12 @@ boardContainer.appendChild(boardPlane);
 
 // Attach click handlers directly to each square
 function attachClickHandlers() {
-  console.log('attachClickHandlers called, squares:', boardPlane.querySelectorAll('.sq3d').length);
   const sqs = boardPlane.querySelectorAll('.sq3d');
   sqs.forEach((sq, idx) => {
     const r = Math.floor(idx / 8);
     const c = idx % 8;
     sq.onclick = function() {
-      window.__lastClick = { r, c, time: Date.now() };
       onCellClick(r, c);
-      window.__afterClick = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
     };
   });
 }
