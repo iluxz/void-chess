@@ -2,6 +2,7 @@
 // 3D board with CSS transforms, spinnable camera, obj
 
 // ===== 3D BOARD SETUP =====
+console.log('chess-ui.js loading...');
 const boardWrap = document.getElementById('boardWrap');
 const board3d = document.getElementById('board3d');
 // Replace canvas with a div-based 3D board
@@ -12,7 +13,11 @@ const boardPlane = document.createElement('div');
 boardPlane.id = 'boardPlane';
 boardPlane.style.cssText = 'position:absolute;top:50%;left:50%;width:min(60vh,60vw);height:min(60vh,60vw);transform:translate(-50%,-50%) rotateX(55deg);transform-style:preserve-3d;transition:transform 0.1s;';
 boardContainer.appendChild(boardPlane);
-boardWrap.replaceChild(boardContainer, board3d);
+if (board3d && board3d.parentNode === boardWrap) {
+  boardWrap.replaceChild(boardContainer, board3d);
+} else {
+  boardWrap.appendChild(boardContainer);
+}
 
 // Create 64 squares
 const squares3d = [];
