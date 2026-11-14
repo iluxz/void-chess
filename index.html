@@ -38,11 +38,8 @@ body{background:#050308;color:#9fd4ff;font-family:'Consolas',monospace;overflow:
 #objText{font-size:12px;line-height:1.5;min-height:60px;color:#9fd4ff}
 #ruleLog{font-size:11px;color:#666;max-height:80px;overflow:auto;border-top:1px solid #222;padding-top:8px;margin-top:8px}
 #ruleLog div{margin-bottom:4px}
-#rulebook{background:rgba(0,0,0,0.4);border:1px solid #222;border-radius:8px;padding:10px;font-size:11px;max-height:200px;overflow:auto}
-#rulebook h3{color:#8b5cf6;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:2px}
-#rulebook .rule{margin-bottom:3px;color:#888;padding-left:8px;border-left:2px solid #333}
-#rulebook .rule.mutation{color:#ffb43a;border-left-color:#ffb43a}
-#rulebook .rule.normal{color:#9fd4ff;border-left-color:#5fa8d3}
+#bookBtn{position:fixed;bottom:10px;right:10px;background:rgba(139,92,246,0.15);border:1px solid #8b5cf6;color:#8b5cf6;padding:8px 14px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:12px;z-index:20;transition:all .2s}
+#bookBtn:hover{background:rgba(139,92,246,0.3);box-shadow:0 0 15px rgba(139,92,246,0.3)}
 #controls{display:flex;gap:6px;flex-wrap:wrap}
 button{background:rgba(95,168,211,0.08);border:1px solid #333;color:#9fd4ff;padding:7px 12px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all .15s}
 button:hover{border-color:#5fa8d3;background:rgba(95,168,211,0.18);box-shadow:0 0 10px rgba(95,168,211,0.2)}
@@ -59,6 +56,34 @@ canvas{display:block}
 #accuseOverlay h2{color:#ff4444;font-size:24px;text-shadow:0 0 20px rgba(255,68,68,0.5)}
 #accuseOverlay p{color:#9fd4ff;font-size:14px;max-width:400px;text-align:center}
 #accuseOverlay button{font-size:14px;padding:10px 24px}
+
+/* ===== BOOK UI ===== */
+#bookOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:200;perspective:1200px}
+#bookOverlay.show{display:flex}
+#book{width:min(600px,90vw);height:min(400px,70vh);position:relative;transform-style:preserve-3d;transition:transform .6s}
+#book.open{transform:rotateY(-15deg)}
+.book-cover{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1a0a2e,#0a0812);border:2px solid #8b5cf6;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;backface-visibility:hidden;z-index:10;transition:transform .8s;transform-origin:left center;box-shadow:0 0 40px rgba(139,92,246,0.3)}
+.book-cover.opened{transform:rotateY(-180deg)}
+.book-cover h2{color:#8b5cf6;font-size:28px;margin-bottom:8px;text-shadow:0 0 20px rgba(139,92,246,0.5)}
+.book-cover p{color:#666;font-size:12px}
+.book-cover .spine{position:absolute;left:0;top:0;width:20px;height:100%;background:linear-gradient(90deg,#0a0520,#1a0a2e);border-right:1px solid #8b5cf6;border-radius:8px 0 0 8px}
+.book-pages{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;backface-visibility:hidden}
+.book-page{flex:1;background:#0f0a1a;border:1px solid #333;padding:20px;overflow:auto;position:relative}
+.book-page.left{border-right:1px solid #222;border-radius:8px 0 0 8px}
+.book-page.right{border-left:1px solid #222;border-radius:0 8px 8px 0}
+.book-page h3{color:#8b5cf6;font-size:13px;margin-bottom:10px;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #333;padding-bottom:6px}
+.book-page .rule-item{font-size:11px;color:#9fd4ff;margin-bottom:6px;padding-left:10px;border-left:2px solid #5fa8d3;line-height:1.4}
+.book-page .rule-item.mutation{color:#ffb43a;border-left-color:#ffb43a}
+.book-page .rule-item.normal{color:#9fd4ff;border-left-color:#5fa8d3}
+.book-nav{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:20}
+.book-nav button{background:rgba(139,92,246,0.15);border:1px solid #8b5cf6;color:#8b5cf6;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px}
+.book-nav button:hover{background:rgba(139,92,246,0.3)}
+.book-nav button:disabled{opacity:0.3;cursor:default}
+#bookClose{position:absolute;top:8px;right:12px;background:none;border:none;color:#666;cursor:pointer;font-size:18px;z-index:20}
+#bookClose:hover{color:#ff4444}
+.page-turn{animation:pageTurn .6s ease-in-out}
+@keyframes pageTurn{0%{transform:rotateY(0deg)}50%{transform:rotateY(-90deg);opacity:0.5}100%{transform:rotateY(0deg)}}
+.book-spine{position:absolute;left:50%;top:0;width:2px;height:100%;background:linear-gradient(180deg,#8b5cf6,#333,#8b5cf6);z-index:15;transform:translateX(-50%)}
 </style>
 </head>
 <body>
@@ -77,10 +102,6 @@ canvas{display:block}
       <div id="objText">...huh. you want to play chess? fine. but i make the rules.</div>
       <div id="ruleLog"></div>
     </div>
-    <div id="rulebook">
-      <h3>rulebook</h3>
-      <div id="rulesList"></div>
-    </div>
     <div id="controls">
       <button id="undoBtn">undo</button>
       <button id="hintBtn">hint</button>
@@ -90,22 +111,37 @@ canvas{display:block}
     </div>
   </div>
 </div>
+<button id="bookBtn">📖 rulebook</button>
 <div id="legend">you = white (bottom) | obj = blue (top) | click to move | obj can cheat. so can you. but dont get caught.</div>
 <div id="accuseOverlay">
   <h2 id="accuseTitle">ACCUSED</h2>
   <p id="accuseMsg"></p>
   <button onclick="closeAccuse()">ok</button>
 </div>
+<div id="bookOverlay">
+  <div id="book">
+    <div class="book-cover" id="bookCover">
+      <div class="spine"></div>
+      <h2>void chess</h2>
+      <p>rulebook</p>
+      <p style="margin-top:20px;font-size:10px;color:#444">click to open</p>
+    </div>
+    <div class="book-pages" id="bookPages" style="display:none">
+      <button id="bookClose">✕</button>
+      <div class="book-page left" id="bookLeft"></div>
+      <div class="book-spine"></div>
+      <div class="book-page right" id="bookRight"></div>
+      <div class="book-nav">
+        <button id="bookPrev">◀ prev</button>
+        <button id="bookNext">next ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script>
 // ===== AUDIO =====
 const audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-function playTone(freq,dur,type='sine',vol=0.15){
-  const osc=audioCtx.createOscillator();const gain=audioCtx.createGain();
-  osc.type=type;osc.frequency.value=freq;gain.gain.value=vol;
-  osc.connect(gain);gain.connect(audioCtx.destination);
-  osc.start();gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
-  osc.stop(audioCtx.currentTime+dur);
-}
+function playTone(freq,dur,type='sine',vol=0.15){const osc=audioCtx.createOscillator();const gain=audioCtx.createGain();osc.type=type;osc.frequency.value=freq;gain.gain.value=vol;osc.connect(gain);gain.connect(audioCtx.destination);osc.start();gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);osc.stop(audioCtx.currentTime+dur);}
 function playMove(){playTone(440,.08,'square',.08);setTimeout(()=>playTone(330,.06,'square',.05),60)}
 function playCapture(){playTone(220,.12,'sawtooth',.12);setTimeout(()=>playTone(165,.1,'sawtooth',.08),80)}
 function playCheck(){playTone(880,.15,'sine',.15);setTimeout(()=>playTone(660,.15,'sine',.12),150);setTimeout(()=>playTone(440,.2,'sine',.1),300)}
@@ -115,6 +151,8 @@ function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.
 function playLose(){[440,370,311,233].forEach((f,i)=>setTimeout(()=>playTone(f,.25,'sawtooth',.1),i*200))}
 function playHint(){playTone(660,.1,'sine',.1);setTimeout(()=>playTone(880,.1,'sine',.08),100)}
 function playUndo(){playTone(330,.08,'triangle',.08);setTimeout(()=>playTone(440,.08,'triangle',.06),80)}
+function playPageTurn(){playTone(500,.06,'triangle',.06);setTimeout(()=>playTone(400,.08,'triangle',.04),60)}
+function playBookOpen(){playTone(200,.15,'sine',.1);setTimeout(()=>playTone(300,.1,'sine',.08),100);setTimeout(()=>playTone(400,.1,'sine',.06),200)}
 
 // ===== PARTICLES =====
 const pCanvas=document.getElementById('particles');const pCtx=pCanvas.getContext('2d');
@@ -122,11 +160,44 @@ let pW,pH,particles=[];
 function resizeP(){pW=pCanvas.width=window.innerWidth;pH=pCanvas.height=window.innerHeight}
 resizeP();window.addEventListener('resize',resizeP);
 for(let i=0;i<60;i++)particles.push({x:Math.random()*pW,y:Math.random()*pH,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5,hue:Math.random()<.5?210:270});
+function drawP(){pCtx.clearRect(0,0,pW,pH);for(const p of particles){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=pW;if(p.x>pW)p.x=0;if(p.y<0)p.y=pH;if(p.y>pH)p.y=0;pCtx.beginPath();pCtx.arc(p.x,p.y,p.r,0,Math.PI*2);pCtx.fillStyle=`hsla(${p.hue},70%,60%,0.4)`;pCtx.fill();}requestAnimationFrame(drawP);}
+drawP();
+
+// ===== CHESS ENGINE =====
 const WHITE='w',BLACK='b';
-function objSpeak(text){const el=document.getElementById('objText');el.textContent='';let i=0;const iv=setInterval(()=>{if(i<text.length){el.textContent+=text[i];i++}else clearInterval(iv)},35);}
 const objLines=['...huh. you want to play chess? fine. but i make the rules.','i am the void. i do not play fairly.','your move. make it count. it won\'t matter.','interesting. wrong, but interesting.','i have seen ten thousand games. you have seen none.','the board is mine. you are just visiting.','...did you just do that? bold. stupid, but bold.','i could win this in three moves. but where is the fun in that.','you are losing. you just don\'t know it yet.','checkmate is coming. not today. but soon.','that was a mistake. i will remember it.','are you even trying?','...ok that was actually good. don\'t let it go to your head.'];
+function objSpeak(text){const el=document.getElementById('objText');el.textContent='';let i=0;const iv=setInterval(()=>{if(i<text.length){el.textContent+=text[i];i++}else clearInterval(iv)},35);}
 function initBoard(){const b=Array(8).fill(null).map(()=>Array(8).fill(null));const back=['R','N','B','Q','K','B','N','R'];for(let c=0;c<8;c++){b[0][c]={type:back[c],color:BLACK};b[1][c]={type:'P',color:BLACK};b[6][c]={type:'P',color:WHITE};b[7][c]={type:back[c],color:WHITE};}return b;}
+let board=initBoard(),turn=WHITE,selected=null,validMoves=[],lastMove=null,gameOver=false;
+let moveHistory=[],castling={wK:true,wQ:true,bK:true,bQ:true},enPassant=null;
+let capturedPieces={w:[],b:[]},moveCount=0,hintMove=null;
 function inB(r,c){return r>=0&&r<8&&c>=0&&c<8}
+const mutations=[
+  {name:'bishop teleport',desc:'bishops can now teleport to any empty square',apply:s=>{s.bishopTeleport=true}},
+  {name:'knight queen',desc:'knights move like queens for 3 turns',apply:s=>{s.knightQueen=3}},
+  {name:'pawn rebellion',desc:'your pawns can move backwards now',apply:s=>{s.pawnBackwards=true}},
+  {name:'rook phase',desc:'rooks phase through pieces for 2 turns',apply:s=>{s.rookPhase=2}},
+  {name:'extra move',desc:'i get to move twice this turn',apply:s=>{s.extraMove=true}},
+  {name:'board flip',desc:'the board rotates 90 degrees',apply:s=>{s.boardFlip=true}},
+  {name:'piece swap',desc:'all pieces on the board swap colors',apply:s=>{s.pieceSwap=true}},
+  {name:'queen steal',desc:'your queen is now mine',apply:s=>{s.queenSteal=true}},
+  {name:'free promotion',desc:'pawns can promote to any piece',apply:s=>{s.freePromotion=true}},
+  {name:'knight jump',desc:'knights can jump to any square',apply:s=>{s.knightJump=true}},
+  {name:'bishop laser',desc:'bishops can shoot any empty diagonal square',apply:s=>{s.bishopLaser=true}},
+  {name:'rook laser',desc:'rooks can shoot any empty square in their row/column',apply:s=>{s.rookLaser=true}},
+  {name:'king rampage',desc:'my king moves like a queen now',apply:s=>{s.kingRampage=true}},
+  {name:'pawn sprint',desc:'pawns can move 3 squares on first move',apply:s=>{s.pawnSprint=true}},
+  {name:'random vanish',desc:'a random piece of yours vanishes',apply:s=>{s.randomVanish=true}},
+  {name:'mirror move',desc:'your move is mirrored on my side',apply:s=>{s.mirrorMove=true}},
+  {name:'chaos board',desc:'pieces are randomly rearranged',apply:s=>{s.chaosBoard=true}},
+  {name:'double agent',desc:'one of your pieces now works for me',apply:s=>{s.doubleAgent=true}},
+];
+let gameState={bishopTeleport:false,knightQueen:0,pawnBackwards:false,rookPhase:0,extraMove:false,boardFlip:false,pieceSwap:false,queenSteal:false,freePromotion:false,knightJump:false,bishopLaser:false,rookLaser:false,kingRampage:false,pawnSprint:false,randomVanish:false,mirrorMove:false,chaosBoard:false,doubleAgent:false,penaltySquares:[]};
+let activeMutations=[];
+const objCheatTypes=['extra_piece','illegal_move','piece_teleport','invisible_capture'];
+let playerCheating=false,objCheating=false,objCheatType=null;
+
+// ===== MOVE GENERATION =====
 function getMoves(r,c,bs){
   const piece=bs[r][c];if(!piece)return[];const moves=[];const color=piece.color,opp=color===WHITE?BLACK:WHITE,t=piece.type;
   const add=(toR,toC,sp)=>{if(!inB(toR,toC))return;const target=bs[toR][toC];if(target&&target.color===color)return;moves.push({from:{r,c},to:{r:toR,c:toC},capture:!!target,special:sp});};
@@ -220,107 +291,61 @@ function getHint(){
 }
 
 // ===== CHEATING =====
-let playerCheating=false, objCheating=false, objCheatType=null;
-const objCheatTypes=['extra_piece','illegal_move','piece_teleport','invisible_capture'];
-
 function objDoCheat(){
   if(Math.random()<0.35){
-    objCheating=true;
-    objCheatType=objCheatTypes[Math.floor(Math.random()*objCheatTypes.length)];
-    if(objCheatType==='extra_piece'){
-      // add a random piece somewhere
-      const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}
-      if(empty.length>0){const p=empty[Math.floor(Math.random()*empty.length)];board[p.r][p.c]={type:'N',color:BLACK};renderBoard();}
-    } else if(objCheatType==='piece_teleport'){
-      // teleport a black piece to a random empty square
-      const blacks=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK)blacks.push({r,c});}
-      if(blacks.length>0){const p=blacks[Math.floor(Math.random()*blacks.length)];const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const t=empty[Math.floor(Math.random()*empty.length)];board[t.r][t.c]=board[p.r][p.c];board[p.r][p.c]=null;renderBoard();}}
-    } else if(objCheatType==='invisible_capture'){
-      // capture a white piece silently
-      const whites=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)whites.push({r,c});}
-      if(whites.length>0){const p=whites[Math.floor(Math.random()*whites.length)];board[p.r][p.c]=null;renderBoard();}
-    }
-    // illegal_move: obj will make an illegal move on his turn (handled in aiMove)
+    objCheating=true;objCheatType=objCheatTypes[Math.floor(Math.random()*objCheatTypes.length)];
+    if(objCheatType==='extra_piece'){const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const p=empty[Math.floor(Math.random()*empty.length)];board[p.r][p.c]={type:'N',color:BLACK};renderBoard();}}
+    else if(objCheatType==='piece_teleport'){const blacks=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK)blacks.push({r,c});}if(blacks.length>0){const p=blacks[Math.floor(Math.random()*blacks.length)];const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const t=empty[Math.floor(Math.random()*empty.length)];board[t.r][t.c]=board[p.r][p.c];board[p.r][p.c]=null;renderBoard();}}}
+    else if(objCheatType==='invisible_capture'){const whites=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)whites.push({r,c});}if(whites.length>0){const p=whites[Math.floor(Math.random()*whites.length)];board[p.r][p.c]=null;renderBoard();}}
   }
 }
-
 function playerDoCheat(){
   playerCheating=true;
-  // make an illegal move: move any white piece to any square
   const whites=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)whites.push({r,c});}
   if(whites.length===0)return;
   const from=whites[Math.floor(Math.random()*whites.length)];
   const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c]||(board[r][c].color===BLACK))empty.push({r,c});}
   if(empty.length===0)return;
   const to=empty[Math.floor(Math.random()*empty.length)];
-  makeMove(from,to,null);
-  renderBoard();
-  // 30% chance obj notices
-  if(Math.random()<0.3){
-    setTimeout(()=>{objAccusePlayer();},1000);
-  } else {
-    // obj didn't notice, reset cheating flag
-    setTimeout(()=>{playerCheating=false;},2000);
-  }
+  makeMove(from,to,null);renderBoard();
+  if(Math.random()<0.3){setTimeout(()=>{objAccusePlayer();},1000);}
+  else{setTimeout(()=>{playerCheating=false;},2000);}
   playMove();
 }
-
 function objAccusePlayer(){
-  if(!playerCheating)return;
-  playerCheating=false;
-  playAccuse();
+  if(!playerCheating)return;playerCheating=false;playAccuse();
   document.getElementById('accuseTitle').textContent='OBJ ACCUSES YOU';
   document.getElementById('accuseMsg').textContent='i saw that. you cheated. penalty applied.';
   document.getElementById('accuseOverlay').classList.add('show');
-  applyPenalty(WHITE); // player gets penalized
-  objSpeak('i saw that. you cheated. penalty.');
+  applyPenalty(WHITE);objSpeak('i saw that. you cheated. penalty.');
   logRule('player caught cheating → penalty');
 }
-
 function playerAccuseObj(){
-  if(gameOver)return;
-  playAccuse();
-  if(objCheating){
-    objCheating=false;
+  if(gameOver)return;playAccuse();
+  if(objCheating){objCheating=false;
     document.getElementById('accuseTitle').textContent='ACCUSATION SUCCESSFUL';
     document.getElementById('accuseMsg').textContent='you caught obj cheating. penalty applied to obj.';
-    document.getElementById('accuseOverlay').classList.add('show');
-    applyPenalty(BLACK);
-    objSpeak('...fine. you got me. penalty.');
-    logRule('obj caught cheating → penalty');
-  } else {
+    document.getElementById('accuseOverlay').classList.add('show');applyPenalty(BLACK);
+    objSpeak('...fine. you got me. penalty.');logRule('obj caught cheating → penalty');
+  }else{
     document.getElementById('accuseTitle').textContent='FALSE ACCUSATION';
     document.getElementById('accuseMsg').textContent='obj was not cheating. you get the penalty instead.';
-    document.getElementById('accuseOverlay').classList.add('show');
-    applyPenalty(WHITE);
-    objSpeak('wrong. i was playing fair. penalty for you.');
-    logRule('false accusation → player penalized');
+    document.getElementById('accuseOverlay').classList.add('show');applyPenalty(WHITE);
+    objSpeak('wrong. i was playing fair. penalty for you.');logRule('false accusation → player penalized');
   }
 }
-
 function closeAccuse(){document.getElementById('accuseOverlay').classList.remove('show');}
-
 function applyPenalty(color){
-  // opposite team can capture piece in front of king
-  // find king
   let kingPos=null;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].type==='K'&&board[r][c].color===color)kingPos={r,c};}
   if(!kingPos)return;
-  const dir=color===WHITE? -1:1; // piece in front
-  const frontR=kingPos.r+dir,frontC=kingPos.c;
+  const dir=color===WHITE?-1:1;const frontR=kingPos.r+dir,frontC=kingPos.c;
   if(!inB(frontR,frontC))return;
   const frontPiece=board[frontR][frontC];
-  // mark the square as penalty zone - opposite team can capture it, king can't
-  if(frontPiece){
-    // remove it (captured by opposite team)
-    board[frontR][frontC]=null;
-    renderBoard();
-    // flash the cell
-    const cells=document.querySelectorAll('.cell');
-    const idx=frontR*8+frontC;
+  if(frontPiece){board[frontR][frontC]=null;renderBoard();
+    const cells=document.querySelectorAll('.cell');const idx=frontR*8+frontC;
     if(cells[idx])cells[idx].classList.add('penalty');
     setTimeout(()=>{if(cells[idx])cells[idx].classList.remove('penalty');},2000);
   }
-  // set a flag so king can't capture that square
   if(!gameState.penaltySquares)gameState.penaltySquares=[];
   gameState.penaltySquares.push({r:frontR,c:frontC,color:color});
 }
@@ -328,21 +353,15 @@ function applyPenalty(color){
 // ===== AI =====
 function aiMove(){
   if(gameOver)return;
-  // obj might cheat before moving
   if(Math.random()<0.15)objDoCheat();
   const moves=[];
   for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK){const mvs=getMoves(r,c,board);for(const m of mvs)moves.push(m);}}
-  // if obj is cheating with illegal_move, add a fake move
-  if(objCheating&&objCheatType==='illegal_move'){
-    const blacks=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK)blacks.push({r,c});}
-    if(blacks.length>0){const p=blacks[Math.floor(Math.random()*blacks.length)];const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const t=empty[Math.floor(Math.random()*empty.length)];moves.push({from:p,to:t,capture:false,special:null});}}
-  }
+  if(objCheating&&objCheatType==='illegal_move'){const blacks=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK)blacks.push({r,c});}if(blacks.length>0){const p=blacks[Math.floor(Math.random()*blacks.length)];const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const t=empty[Math.floor(Math.random()*empty.length)];moves.push({from:p,to:t,capture:false,special:null});}}}
   if(moves.length===0){if(isCheck(BLACK))endGame('checkmate! you win... for now.');else endGame('stalemate. draw.');return;}
   const captures=moves.filter(m=>m.capture);
   const pool=captures.length>0&&Math.random()<0.7?captures:moves;
   const move=pool[Math.floor(Math.random()*pool.length)];
-  makeMove(move.from,move.to,move.special);
-  renderBoard();
+  makeMove(move.from,move.to,move.special);renderBoard();
   if(isCheck(WHITE)){playCheck();document.getElementById('status').textContent='check!';document.getElementById('status').style.color='#ff4444';}
   else{document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';}
   let playerMoves=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)playerMoves+=getMoves(r,c,board).length;}
@@ -351,7 +370,6 @@ function aiMove(){
   if(gameState.rookPhase>0)gameState.rookPhase--;
   if(Math.random()<0.25)setTimeout(mutateRules,800);
   if(gameState.extraMove){gameState.extraMove=false;setTimeout(aiMove,600);}
-  // reset obj cheating flag after move (chance he gets away with it)
   if(objCheating&&Math.random()<0.5){objCheating=false;objCheatType=null;}
 }
 function endGame(msg){gameOver=true;document.getElementById('status').textContent=msg;if(msg.includes('win'))playWin();else playLose();objSpeak(msg);}
@@ -367,7 +385,6 @@ function renderBoard(){
     if(validMoves.some(m=>m.to.r===r&&m.to.c===c))cell.classList.add('valid-move');
     if(hintMove&&hintMove.to.r===r&&hintMove.to.c===c)cell.classList.add('hint');
     if(lastMove&&((lastMove.from.r===r&&lastMove.from.c===c)||(lastMove.to.r===r&&lastMove.to.c===c)))cell.classList.add('last-move');
-    // penalty squares
     if(gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c))cell.classList.add('penalty');
     const piece=board[r][c];
     if(piece){const span=document.createElement('span');span.className='piece '+(piece.color===WHITE?'white':'black');span.textContent=pieceSymbols[piece.type][piece.color];cell.appendChild(span);}
@@ -378,17 +395,12 @@ function renderBoard(){
 }
 function onCellClick(r,c){
   if(gameOver||turn!==WHITE)return;
-  // check penalty: king can't capture penalty square
   const piece=board[r][c];
   if(selected){
     const move=validMoves.find(m=>m.to.r===r&&m.to.c===c);
     if(move){
-      // check if king is trying to capture a penalty square
       const kingPiece=board[selected.r][selected.c];
-      if(kingPiece&&kingPiece.type==='K'&&gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c&&p.color===WHITE)){
-        objSpeak('your king cannot take that piece. penalty rules.');
-        return;
-      }
+      if(kingPiece&&kingPiece.type==='K'&&gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c&&p.color===WHITE)){objSpeak('your king cannot take that piece. penalty rules.');return;}
       makeMove(selected,{r,c},move.special);hintMove=null;renderBoard();turn=BLACK;
       document.getElementById('status').textContent='obj thinking...';document.getElementById('status').style.color='#5fa8d3';
       setTimeout(()=>{aiMove();turn=WHITE;},500+Math.random()*400);selected=null;validMoves=[];return;
@@ -400,7 +412,7 @@ function onCellClick(r,c){
   }
 }
 
-// ===== RULEBOOK =====
+// ===== RULEBOOK (BOOK UI) =====
 const normalRules=[
   'king: moves one square in any direction',
   'queen: moves any number of squares in any direction',
@@ -410,18 +422,74 @@ const normalRules=[
   'pawn: moves forward one square, captures diagonally',
   'castling: king and rook swap if path is clear',
   'en passant: pawn can capture passing pawn',
-  'promotion: pawn becomes queen (or any piece) at end',
-  'check: king is under attack, must escape',
-  'checkmate: no legal moves while in check = loss',
+  'promotion: pawn becomes queen at end row',
+  'check: king under attack, must escape',
+  'checkmate: no legal moves in check = loss',
   'stalemate: no legal moves, not in check = draw',
 ];
-let activeMutations=[];
-function updateRulebook(){
-  const list=document.getElementById('rulesList');list.innerHTML='';
-  for(const r of normalRules){const div=document.createElement('div');div.className='rule normal';div.textContent=r;list.appendChild(div);}
-  for(const m of activeMutations){const div=document.createElement('div');div.className='rule mutation';div.textContent='⚡ '+m;list.appendChild(div);}
+const bookPages=[];
+let currentPage=0;
+function buildBookPages(){
+  bookPages.length=0;
+  // normal rules page
+  bookPages.push({title:'normal rules',rules:normalRules.map(r=>({text:r,type:'normal'}))});
+  // mutations page(s)
+  if(activeMutations.length>0){
+    const mutRules=activeMutations.map(m=>({text:m,type:'mutation'}));
+    // split into chunks of 8
+    for(let i=0;i<mutRules.length;i+=8){
+      bookPages.push({title:'obj mutations',rules:mutRules.slice(i,i+8)});
+    }
+  } else {
+    bookPages.push({title:'obj mutations',rules:[{text:'no mutations yet. obj hasn\'t changed the rules... yet.',type:'mutation'}]});
+  }
+  // cheating rules
+  bookPages.push({title:'cheating rules',rules:[
+    {text:'you can cheat by clicking the cheat button',type:'normal'},
+    {text:'obj can also cheat randomly',type:'mutation'},
+    {text:'accuse button: catch obj cheating for penalty',type:'normal'},
+    {text:'false accusation penalizes you instead',type:'mutation'},
+    {text:'penalty: opposite team captures piece in front of king',type:'mutation'},
+    {text:'king cannot recapture the penalized piece',type:'mutation'},
+  ]});
 }
-mutateRules=function(){
+function renderBookPage(){
+  const left=document.getElementById('bookLeft'),right=document.getElementById('bookRight');
+  left.innerHTML='';right.innerHTML='';
+  const page=bookPages[currentPage];
+  if(!page)return;
+  const h=document.createElement('h3');h.textContent=page.title;left.appendChild(h);
+  const half=Math.ceil(page.rules.length/2);
+  for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+page.rules[i].type;div.textContent=page.rules[i].text;left.appendChild(div);}
+  if(currentPage+1<bookPages.length){
+    const nextPage=bookPages[currentPage+1];
+    const h2=document.createElement('h3');h2.textContent=nextPage.title;right.appendChild(h2);
+    for(const r of nextPage.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;right.appendChild(div);}
+  }
+  document.getElementById('bookPrev').disabled=currentPage<=0;
+  document.getElementById('bookNext').disabled=currentPage>=bookPages.length-1;
+}
+function openBook(){
+  buildBookPages();currentPage=0;
+  const cover=document.getElementById('bookCover');const pages=document.getElementById('bookPages');
+  cover.classList.add('opened');playBookOpen();
+  setTimeout(()=>{cover.style.display='none';pages.style.display='flex';renderBookPage();},400);
+  document.getElementById('bookOverlay').classList.add('show');
+}
+function closeBook(){
+  const cover=document.getElementById('bookCover');const pages=document.getElementById('bookPages');
+  pages.style.display='none';cover.style.display='flex';cover.classList.remove('opened');
+  document.getElementById('bookOverlay').classList.remove('show');
+}
+function nextPage(){
+  if(currentPage<bookPages.length-1){currentPage++;playPageTurn();const p=document.getElementById('bookPages');p.classList.add('page-turn');setTimeout(()=>p.classList.remove('page-turn'),600);renderBookPage();}
+}
+function prevPage(){
+  if(currentPage>0){currentPage--;playPageTurn();const p=document.getElementById('bookPages');p.classList.add('page-turn');setTimeout(()=>p.classList.remove('page-turn'),600);renderBookPage();}
+}
+
+// ===== MUTATE (patched) =====
+function mutateRules(){
   const m=mutations[Math.floor(Math.random()*mutations.length)];
   m.apply(gameState);logRule(m.desc);objSpeak(m.desc+'. deal with it.');
   activeMutations.push(m.desc);updateRulebook();
@@ -430,11 +498,15 @@ mutateRules=function(){
   if(gameState.queenSteal){for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].type==='Q'&&board[r][c].color===WHITE)board[r][c].color=BLACK;}gameState.queenSteal=false;renderBoard();}
   if(gameState.randomVanish){const pieces=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)pieces.push({r,c});}if(pieces.length>0){const p=pieces[Math.floor(Math.random()*pieces.length)];board[p.r][p.c]=null;}gameState.randomVanish=false;renderBoard();}
   if(gameState.chaosBoard){const all=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c])all.push(board[r][c]);}for(let i=0;i<8;i++)for(let j=0;j<8;j++)board[i][j]=null;for(const p of all){let placed=false;while(!placed){const r=Math.floor(Math.random()*8),c=Math.floor(Math.random()*8);if(!board[r][c]){board[r][c]=p;placed=true;}}}gameState.chaosBoard=false;renderBoard();}
-  // shake board
   const b=document.getElementById('board');b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);
   playMutate();
-};
+}
+function updateRulebook(){buildBookPages();}
 
+// ===== LOG RULE =====
+function logRule(text){const log=document.getElementById('ruleLog');const div=document.createElement('div');div.textContent='> '+text;log.appendChild(div);log.scrollTop=log.scrollHeight;}
+
+// ===== NEW GAME =====
 function newGame(){
   board=initBoard();turn=WHITE;selected=null;validMoves=[];lastMove=null;gameOver=false;moveHistory=[];castling={wK:true,wQ:true,bK:true,bQ:true};enPassant=null;capturedPieces={w:[],b:[]};moveCount=0;hintMove=null;
   gameState={bishopTeleport:false,knightQueen:0,pawnBackwards:false,rookPhase:0,extraMove:false,boardFlip:false,pieceSwap:false,queenSteal:false,freePromotion:false,knightJump:false,bishopLaser:false,rookLaser:false,kingRampage:false,pawnSprint:false,randomVanish:false,mirrorMove:false,chaosBoard:false,doubleAgent:false,penaltySquares:[]};
@@ -443,11 +515,18 @@ function newGame(){
   objSpeak(objLines[0]);updateRulebook();renderBoard();
 }
 
+// ===== EVENTS =====
 document.getElementById('undoBtn').addEventListener('click',undoMove);
 document.getElementById('hintBtn').addEventListener('click',getHint);
 document.getElementById('accuseBtn').addEventListener('click',playerAccuseObj);
 document.getElementById('cheatBtn').addEventListener('click',playerDoCheat);
 document.getElementById('newGameBtn').addEventListener('click',newGame);
+document.getElementById('bookBtn').addEventListener('click',openBook);
+document.getElementById('bookCover').addEventListener('click',openBook);
+document.getElementById('bookClose').addEventListener('click',closeBook);
+document.getElementById('bookPrev').addEventListener('click',prevPage);
+document.getElementById('bookNext').addEventListener('click',nextPage);
+document.getElementById('bookOverlay').addEventListener('click',(e)=>{if(e.target===document.getElementById('bookOverlay'))closeBook();});
 newGame();
 setInterval(()=>{if(Math.random()<0.12&&!gameOver)objSpeak(objLines[Math.floor(Math.random()*objLines.length)]);},25000);
 </script>
