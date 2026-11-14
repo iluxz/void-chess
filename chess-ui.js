@@ -14,19 +14,19 @@ boardPlane.id = 'boardPlane';
 boardPlane.style.cssText = 'position:absolute;top:50%;left:50%;width:min(60vh,60vw);height:min(60vh,60vw);transform:translate(-50%,-50%) rotateX(55deg);transform-style:preserve-3d;transition:transform 0.1s;';
 boardContainer.appendChild(boardPlane);
 
-// Event delegation for clicks
-boardPlane.addEventListener('click', (e) => {
-  const sq = e.target.closest('.sq3d');
-  if (!sq) return;
-  const r = parseInt(sq.dataset.r);
-  const c = parseInt(sq.dataset.c);
-  if (isNaN(r) || isNaN(c)) return;
-  window.__lastClick = { r, c, time: Date.now() };
-  window.__lastClick = { r, c, time: Date.now() };
-  onCellClick(r, c);
-  window.__afterClick = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
-  window.__afterClick = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
-});
+// Attach click handlers directly to each square
+function attachClickHandlers() {
+  const sqs = boardPlane.querySelectorAll('.sq3d');
+  sqs.forEach((sq, idx) => {
+    const r = Math.floor(idx / 8);
+    const c = idx % 8;
+    sq.onclick = function() {
+      window.__lastClick = { r, c, time: Date.now() };
+      onCellClick(r, c);
+      window.__afterClick = { selected: selected ? selected.r + ',' + selected.c : 'none', turn, gameOver, validMoves: validMoves.length };
+    };
+  });
+}
 if (board3d && board3d.parentNode === boardWrap) {
   boardWrap.replaceChild(boardContainer, board3d);
 } else {
@@ -47,6 +47,7 @@ for (let r = 0; r < 8; r++) {
     squares3d.push(sq);
   }
 }
+attachClickHandlers();
 
 // Camera state
 let rotX = 55; // tilt angle
