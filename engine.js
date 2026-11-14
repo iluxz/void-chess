@@ -69,7 +69,7 @@ function isCheck(color){
   return false;
 }
 function makeMove(from,to,special,saveHistory=true){
-  const piece=board[from.r][from.c];const captured=board[to.r][to.c];
+  const piece=board[from.r][from.c];if(!piece)return;const captured=board[to.r][to.c];
   const snapshot={board:board.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount,gameState:{...gameState}};
   board[to.r][to.c]=piece;board[from.r][from.c]=null;
   if(special==='castleK'){const rook=board[from.r][7];board[from.r][5]=rook;board[from.r][7]=null;}
