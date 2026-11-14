@@ -3,6 +3,7 @@
 
 // ===== 3D BOARD SETUP =====
 console.log('chess-ui.js loading...');
+window.__chessLoaded = true;
 const boardWrap = document.getElementById('boardWrap');
 const board3d = document.getElementById('board3d');
 // Replace canvas with a div-based 3D board
