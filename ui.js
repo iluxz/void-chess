@@ -116,71 +116,32 @@ function closeBook(){
 function nextPage(){
   if(isFlipping||currentPage>=bookPages.length-1)return;
   isFlipping=true;playPageTurn();
-  const flipper=document.getElementById('pageFlipper');
-  const shadow=document.getElementById('flipShadow');
-  const front=document.getElementById('flipFront');
-  const back=document.getElementById('flipBack');
-  const rightPage=document.getElementById('pageRight');
-  const leftPage=document.getElementById('pageLeft');
-  // Hide underlying right page during flip
-  rightPage.style.opacity='0';
-  // Show flipper
-  flipper.classList.add('active');
-  // Set front content to current right page (what we're flipping)
-  const currentPageData=bookPages[currentPage+1];
-  if(currentPageData){front.innerHTML='';const h=document.createElement('h3');h.textContent=currentPageData.title;front.appendChild(h);for(const r of currentPageData.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;front.appendChild(div);}}
-  // Set back content to next spread's left page (what we reveal)
-  const nextPageData=bookPages[currentPage+2];
-  if(nextPageData){back.innerHTML='';const h=document.createElement('h3');h.textContent=nextPageData.title;back.appendChild(h);const half=Math.ceil(nextPageData.rules.length/2);for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+nextPageData.rules[i].type;div.textContent=nextPageData.rules[i].text;back.appendChild(div);}}
-  shadow.classList.add('show');
-  // Force reflow then animate
-  void flipper.offsetWidth;
-  flipper.classList.add('flipping');
+  const pages=document.getElementById('bookOpen');
+  pages.style.transition='opacity .3s, transform .3s';
+  pages.style.opacity='0.3';
+  pages.style.transform='scale(0.97)';
   setTimeout(()=>{
     currentPage++;
-    flipper.classList.remove('flipping');
-    flipper.classList.remove('active');
-    shadow.classList.remove('show');
-    rightPage.style.opacity='1';
-    front.innerHTML='';back.innerHTML='';
     renderBookPage();
-    isFlipping=false;
-  },800);
+    pages.style.opacity='1';
+    pages.style.transform='scale(1)';
+    setTimeout(()=>{isFlipping=false;},350);
+  },350);
 }
 function prevPage(){
   if(isFlipping||currentPage<=0)return;
   isFlipping=true;playPageTurn();
-  const flipper=document.getElementById('pageFlipper');
-  const shadow=document.getElementById('flipShadow');
-  const front=document.getElementById('flipFront');
-  const back=document.getElementById('flipBack');
-  const leftPage=document.getElementById('pageLeft');
-  flipper.classList.add('active');
-  // Hide underlying left page during flip
-  leftPage.style.opacity='0';
-  // For prev, we flip from left to right
-  flipper.style.transformOrigin='right center';
-  flipper.style.transform='rotateY(180deg)';
-  const prevPageData=bookPages[currentPage-1];
-  if(prevPageData){front.innerHTML='';const h=document.createElement('h3');h.textContent=prevPageData.title;front.appendChild(h);const half=Math.ceil(prevPageData.rules.length/2);for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+prevPageData.rules[i].type;div.textContent=prevPageData.rules[i].text;front.appendChild(div);}}
-  const currentPageData=bookPages[currentPage];
-  if(currentPageData){back.innerHTML='';const h=document.createElement('h3');h.textContent=currentPageData.title;back.appendChild(h);for(const r of currentPageData.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;back.appendChild(div);}}
-  shadow.classList.add('show');
-  void flipper.offsetWidth;
-  flipper.style.transition='transform .8s cubic-bezier(.35,0,.25,1)';
-  flipper.style.transform='rotateY(0deg)';
+  const pages=document.getElementById('bookOpen');
+  pages.style.transition='opacity .3s, transform .3s';
+  pages.style.opacity='0.3';
+  pages.style.transform='scale(0.97)';
   setTimeout(()=>{
     currentPage--;
-    flipper.style.transform='';
-    flipper.style.transformOrigin='left center';
-    flipper.style.transition='';
-    flipper.classList.remove('active');
-    shadow.classList.remove('show');
-    leftPage.style.opacity='1';
-    front.innerHTML='';back.innerHTML='';
     renderBookPage();
-    isFlipping=false;
-  },800);
+    pages.style.opacity='1';
+    pages.style.transform='scale(1)';
+    setTimeout(()=>{isFlipping=false;},350);
+  },350);
 }
 function updateRulebook(){buildBookPages();}
 function logRule(text){const log=document.getElementById('ruleLog');const div=document.createElement('div');div.textContent='> '+text;log.appendChild(div);log.scrollTop=log.scrollHeight;}
