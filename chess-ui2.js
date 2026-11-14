@@ -197,7 +197,7 @@ function renderBoard() {
 }
 
 function onCellClick(r, c) {
-  console.log('onCellClick called:', r, c, 'turn:', turn, 'gameOver:', gameOver, 'selected:', selected ? selected.r+','+selected.c : 'null', 'board[6][4]:', board[6] ? board[6][4] : 'no row 6');
+  // onCellClick
   if (gameOver || turn !== WHITE) return;
   const piece = board[r][c];
   if (selected) {
@@ -205,7 +205,6 @@ function onCellClick(r, c) {
     if (move) {
       const kingPiece = board[selected.r][selected.c];
       if (kingPiece && kingPiece.type === 'K' && gameState.penaltySquares && gameState.penaltySquares.some(p => p.r === r && p.c === c && p.color === WHITE)) { objSpeak('your king cannot take that piece. penalty rules.'); return; }
-      console.log('making move from', selected.r, selected.c, 'to', r, c, 'piece at from:', board[selected.r][selected.c]?.type, 'move:', JSON.stringify(move));
       makeMove(selected, { r, c }, move.special); hintMove = null; renderBoard(); turn = BLACK;
       document.getElementById('status').textContent = 'obj thinking...'; document.getElementById('status').style.color = '#5fa8d3';
       setTimeout(() => { aiMove(); turn = WHITE; }, 500 + Math.random() * 400); selected = null; validMoves = []; return;
