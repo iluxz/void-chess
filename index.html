@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>void chess</title>
 <link rel="stylesheet" href="style.css?v=6">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 </head>
 <body>
 <canvas id="particles"></canvas>
@@ -14,7 +17,7 @@
 </div>
 <div id="game">
   <div id="boardWrap">
-    <canvas id="board3d"></canvas>
+    <div id="board"></div>
   </div>
   <div id="sidebar">
     <div id="objPanel">
@@ -38,7 +41,7 @@
   </div>
 </div>
 <button id="bookBtn">📖 rulebook</button>
-<div id="legend">right-click drag to rotate | scroll to zoom | click pieces to move | obj can cheat. so can you. but dont get caught.</div>
+<div id="legend">click pieces to move | obj can cheat. so can you. but dont get caught.</div>
 <div id="accuseOverlay">
   <h2 id="accuseTitle">ACCUSED</h2>
   <p id="accuseMsg"></p>
@@ -68,9 +71,9 @@
     </div>
   </div>
 </div>
-<script src="audio.js?v=15"></script>
-<script src="engine.js?v=15"></script>
-<script src="ai.js?v=15"></script>
-<script src="chess-ui2.js?v=6"></script>
+<script src="audio.js?v=2"></script>
+<script src="engine.js?v=2"></script>
+<script src="ai.js?v=2"></script>
+<script src="chess-ui.js?v=1"></script>
 </body>
 </html>
