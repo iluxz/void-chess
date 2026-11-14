@@ -37,10 +37,10 @@ function renderBoard(){
     if(gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c))cell.classList.add('penalty');
     const piece=board[r][c];
     if(piece){
-      const key=piece.color+piece.type;
-      const svg=PIECE_SVG[key];
-      if(svg){const div=document.createElement('div');div.className='piece-svg';div.innerHTML=svg;cell.appendChild(div);}
-      else{const span=document.createElement('span');span.className='piece '+(piece.color===WHITE?'white':'black');span.textContent=pieceSymbols[piece.type][piece.color];cell.appendChild(span);}
+      const span=document.createElement('span');
+      span.className='piece '+(piece.color===WHITE?'white':'black');
+      span.textContent=pieceSymbols[piece.type][piece.color];
+      cell.appendChild(span);
     }
     cell.dataset.r=r;cell.dataset.c=c;
     cell.addEventListener('click',()=>onCellClick(r,c));
@@ -48,8 +48,8 @@ function renderBoard(){
   }
   // update captured pieces
   const cw=document.getElementById('capturedWhite');const cb=document.getElementById('capturedBlack');
-  if(cw){cw.innerHTML='';for(const p of capturedPieces.w){const key=p.color+p.type;const svg=PIECE_SVG[key];if(svg){const d=document.createElement('div');d.className='piece-svg';d.style.width='20px';d.style.height='20px';d.innerHTML=svg;cw.appendChild(d);}}}
-  if(cb){cb.innerHTML='';for(const p of capturedPieces.b){const key=p.color+p.type;const svg=PIECE_SVG[key];if(svg){const d=document.createElement('div');d.className='piece-svg';d.style.width='20px';d.style.height='20px';d.innerHTML=svg;cb.appendChild(d);}}}
+  if(cw){cw.innerHTML='';for(const p of capturedPieces.w){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cw.appendChild(s);}}
+  if(cb){cb.innerHTML='';for(const p of capturedPieces.b){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cb.appendChild(s);}}
 }
 function onCellClick(r,c){
   if(gameOver||turn!==WHITE)return;
