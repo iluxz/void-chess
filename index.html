@@ -57,33 +57,56 @@ canvas{display:block}
 #accuseOverlay p{color:#9fd4ff;font-size:14px;max-width:400px;text-align:center}
 #accuseOverlay button{font-size:14px;padding:10px 24px}
 
-/* ===== BOOK UI ===== */
-#bookOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:none;justify-content:center;align-items:center;z-index:200;perspective:1200px}
+/* ===== REAL BOOK UI ===== */
+#bookOverlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:none;justify-content:center;align-items:center;z-index:200}
 #bookOverlay.show{display:flex}
-#book{width:min(600px,90vw);height:min(400px,70vh);position:relative;transform-style:preserve-3d;transition:transform .6s}
-#book.open{transform:rotateY(-15deg)}
-.book-cover{position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,#1a0a2e,#0a0812);border:2px solid #8b5cf6;border-radius:8px;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;backface-visibility:hidden;z-index:10;transition:transform .8s;transform-origin:left center;box-shadow:0 0 40px rgba(139,92,246,0.3)}
-.book-cover.opened{transform:rotateY(-180deg)}
-.book-cover h2{color:#8b5cf6;font-size:28px;margin-bottom:8px;text-shadow:0 0 20px rgba(139,92,246,0.5)}
-.book-cover p{color:#666;font-size:12px}
-.book-cover .spine{position:absolute;left:0;top:0;width:20px;height:100%;background:linear-gradient(90deg,#0a0520,#1a0a2e);border-right:1px solid #8b5cf6;border-radius:8px 0 0 8px}
-.book-pages{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;backface-visibility:hidden}
-.book-page{flex:1;background:#0f0a1a;border:1px solid #333;padding:20px;overflow:auto;position:relative}
-.book-page.left{border-right:1px solid #222;border-radius:8px 0 0 8px}
-.book-page.right{border-left:1px solid #222;border-radius:0 8px 8px 0}
-.book-page h3{color:#8b5cf6;font-size:13px;margin-bottom:10px;text-transform:uppercase;letter-spacing:2px;border-bottom:1px solid #333;padding-bottom:6px}
-.book-page .rule-item{font-size:11px;color:#9fd4ff;margin-bottom:6px;padding-left:10px;border-left:2px solid #5fa8d3;line-height:1.4}
-.book-page .rule-item.mutation{color:#ffb43a;border-left-color:#ffb43a}
-.book-page .rule-item.normal{color:#9fd4ff;border-left-color:#5fa8d3}
-.book-nav{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:12px;z-index:20}
-.book-nav button{background:rgba(139,92,246,0.15);border:1px solid #8b5cf6;color:#8b5cf6;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:11px}
-.book-nav button:hover{background:rgba(139,92,246,0.3)}
-.book-nav button:disabled{opacity:0.3;cursor:default}
-#bookClose{position:absolute;top:8px;right:12px;background:none;border:none;color:#666;cursor:pointer;font-size:18px;z-index:20}
+#bookContainer{perspective:2000px;width:min(700px,95vw);height:min(500px,80vh);position:relative}
+#book{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s}
+#book.opened{transform:translateZ(0)}
+/* Book cover */
+.book-cover-front,.book-cover-back{position:absolute;top:0;left:0;width:100%;height:100%;border-radius:6px 12px 12px 6px;backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer}
+.book-cover-front{background:linear-gradient(135deg,#1a0a2e 0%,#0d0520 50%,#1a0a2e 100%);border:2px solid #8b5cf6;box-shadow:0 0 60px rgba(139,92,246,0.2),inset 0 0 40px rgba(0,0,0,0.5);z-index:10}
+.book-cover-front h2{color:#8b5cf6;font-size:32px;margin-bottom:4px;text-shadow:0 0 30px rgba(139,92,246,0.6);font-family:'Consolas',monospace;letter-spacing:4px}
+.book-cover-front p{color:#555;font-size:12px;letter-spacing:2px}
+.book-cover-front .ornament{color:#8b5cf6;font-size:40px;margin-bottom:16px;opacity:0.6}
+.book-cover-front .hint{position:absolute;bottom:20px;font-size:10px;color:#444;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:0.4}50%{opacity:0.8}}
+.book-cover-back{background:#0a0520;transform:rotateY(180deg)}
+/* Book spine */
+.book-spine{position:absolute;left:0;top:0;width:24px;height:100%;background:linear-gradient(90deg,#0a0520,#1a0a2e 30%,#2a1a3e 50%,#1a0a2e 70%,#0a0520);border-right:1px solid #8b5cf6;border-radius:6px 0 0 6px;z-index:11;box-shadow:2px 0 10px rgba(0,0,0,0.5)}
+/* Pages container */
+.book-pages{position:absolute;top:0;left:24px;width:calc(100% - 24px);height:100%;display:none;transform-style:preserve-3d}
+.book-pages.show{display:flex}
+/* Individual pages */
+.page-spread{display:flex;width:100%;height:100%;position:relative}
+.page{flex:1;background:linear-gradient(180deg,#12101a 0%,#0f0a1a 100%);padding:24px 20px;position:relative;overflow:hidden;border:1px solid #2a2040}
+.page.left{border-radius:0 0 0 0;border-right:1px solid #2a2040}
+.page.right{border-radius:0 0 0 0;border-left:1px solid #2a2040}
+.page::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(139,92,246,0.03) 28px,rgba(139,92,246,0.03) 29px);pointer-events:none}
+.page h3{color:#8b5cf6;font-size:14px;margin-bottom:12px;text-transform:uppercase;letter-spacing:3px;border-bottom:1px solid #3a2a50;padding-bottom:8px;font-weight:normal}
+.page .rule-item{font-size:11.5px;margin-bottom:8px;padding:6px 10px;line-height:1.5;border-left:3px solid #5fa8d3;color:#c0b8d8;background:rgba(95,168,211,0.03)}
+.page .rule-item.mutation{border-left-color:#ffb43a;color:#e8d8a8;background:rgba(255,180,58,0.03)}
+.page .rule-item .rule-num{color:#444;font-size:9px;margin-right:6px}
+/* Page turn animation */
+.page-flip{position:absolute;top:0;right:0;width:50%;height:100%;transform-origin:left center;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.4,0,.2,1);z-index:20;pointer-events:none}
+.page-flip.flipping{transform:rotateY(-180deg)}
+.page-flip .page-front,.page-flip .page-back{position:absolute;top:0;left:0;width:100%;height:100%;backface-visibility:hidden;padding:24px 20px;overflow:hidden}
+.page-flip .page-front{background:linear-gradient(180deg,#12101a 0%,#0f0a1a 100%)}
+.page-flip .page-back{background:linear-gradient(180deg,#0f0a1a 0%,#12101a 100%);transform:rotateY(180deg)}
+.page-flip .page-front::before,.page-flip .page-back::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(139,92,246,0.03) 28px,rgba(139,92,246,0.03) 29px);pointer-events:none}
+.page-shadow{position:absolute;top:0;right:0;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,0,0,0.3));z-index:19;opacity:0;transition:opacity .7s;pointer-events:none}
+.page-shadow.show{opacity:1}
+/* Navigation */
+.book-nav{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;z-index:30}
+.book-nav button{background:rgba(139,92,246,0.15);border:1px solid #8b5cf6;color:#8b5cf6;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .2s}
+.book-nav button:hover{background:rgba(139,92,246,0.3);box-shadow:0 0 10px rgba(139,92,246,0.3)}
+.book-nav button:disabled{opacity:0.2;cursor:default;box-shadow:none}
+.book-nav .page-indicator{color:#555;font-size:10px;letter-spacing:1px}
+#bookClose{position:absolute;top:10px;right:14px;background:none;border:none;color:#666;cursor:pointer;font-size:20px;z-index:30;transition:color .2s}
 #bookClose:hover{color:#ff4444}
-.page-turn{animation:pageTurn .6s ease-in-out}
-@keyframes pageTurn{0%{transform:rotateY(0deg)}50%{transform:rotateY(-90deg);opacity:0.5}100%{transform:rotateY(0deg)}}
-.book-spine{position:absolute;left:50%;top:0;width:2px;height:100%;background:linear-gradient(180deg,#8b5cf6,#333,#8b5cf6);z-index:15;transform:translateX(-50%)}
+/* Page corner curl hint */
+.page-curl{position:absolute;bottom:0;right:0;width:30px;height:30px;background:linear-gradient(135deg,transparent 50%,rgba(139,92,246,0.15) 50%);cursor:pointer;clip-path:polygon(100% 0,100% 100%,0 100%);transition:all .2s}
+.page-curl:hover{width:40px;height:40px;background:linear-gradient(135deg,transparent 50%,rgba(139,92,246,0.3) 50%)}
 </style>
 </head>
 <body>
@@ -119,21 +142,27 @@ canvas{display:block}
   <button onclick="closeAccuse()">ok</button>
 </div>
 <div id="bookOverlay">
-  <div id="book">
-    <div class="book-cover" id="bookCover">
-      <div class="spine"></div>
-      <h2>void chess</h2>
-      <p>rulebook</p>
-      <p style="margin-top:20px;font-size:10px;color:#444">click to open</p>
-    </div>
-    <div class="book-pages" id="bookPages" style="display:none">
-      <button id="bookClose">✕</button>
-      <div class="book-page left" id="bookLeft"></div>
-      <div class="book-spine"></div>
-      <div class="book-page right" id="bookRight"></div>
-      <div class="book-nav">
-        <button id="bookPrev">◀ prev</button>
-        <button id="bookNext">next ▶</button>
+  <div id="bookContainer">
+    <div id="book">
+      <div class="book-cover-front" id="bookCover">
+        <div class="book-spine"></div>
+        <div class="ornament">Uluslararası</div>
+        <h2>VOID CHESS</h2>
+        <p>RULEBOOK</p>
+        <div class="hint">click to open</div>
+      </div>
+      <div class="book-pages" id="bookPages">
+        <button id="bookClose">✕</button>
+        <div class="page-spread">
+          <div class="page left" id="pageLeft"></div>
+          <div class="page right" id="pageRight"></div>
+        </div>
+        <div class="page-shadow" id="pageShadow"></div>
+        <div class="book-nav">
+          <button id="bookPrev">◀ prev</button>
+          <span class="page-indicator" id="pageIndicator">1 / 1</span>
+          <button id="bookNext">next ▶</button>
+        </div>
       </div>
     </div>
   </div>
@@ -151,8 +180,8 @@ function playWin(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.
 function playLose(){[440,370,311,233].forEach((f,i)=>setTimeout(()=>playTone(f,.25,'sawtooth',.1),i*200))}
 function playHint(){playTone(660,.1,'sine',.1);setTimeout(()=>playTone(880,.1,'sine',.08),100)}
 function playUndo(){playTone(330,.08,'triangle',.08);setTimeout(()=>playTone(440,.08,'triangle',.06),80)}
-function playPageTurn(){playTone(500,.06,'triangle',.06);setTimeout(()=>playTone(400,.08,'triangle',.04),60)}
-function playBookOpen(){playTone(200,.15,'sine',.1);setTimeout(()=>playTone(300,.1,'sine',.08),100);setTimeout(()=>playTone(400,.1,'sine',.06),200)}
+function playPageTurn(){playTone(600,.05,'triangle',.08);setTimeout(()=>playTone(500,.06,'triangle',.05),50);setTimeout(()=>playTone(400,.08,'triangle',.04),100)}
+function playBookOpen(){playTone(200,.15,'sine',.1);setTimeout(()=>playTone(300,.1,'sine',.08),100);setTimeout(()=>playTone(400,.1,'sine',.06),200);setTimeout(()=>playTone(500,.1,'sine',.05),300)}
 
 // ===== PARTICLES =====
 const pCanvas=document.getElementById('particles');const pCtx=pCanvas.getContext('2d');
@@ -254,7 +283,6 @@ function makeMove(from,to,special,saveHistory=true){
   if(gameState.knightQueen>0)gameState.knightQueen--;
   if(gameState.rookPhase>0)gameState.rookPhase--;
 }
-
 function undoMove(){
   if(moveHistory.length===0)return;
   let undone=0;
@@ -272,7 +300,6 @@ function undoMove(){
   playUndo();renderBoard();
   objSpeak('...you undid that. cowardly. but effective.');
 }
-
 function getHint(){
   if(gameOver||turn!==WHITE)return;
   const allMoves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE){const mvs=getMoves(r,c,board);for(const m of mvs)allMoves.push(m);}}
@@ -289,8 +316,6 @@ function getHint(){
   hintMove=best;selected=null;validMoves=[best];playHint();renderBoard();
   objSpeak('...fine. try '+String.fromCharCode(97+best.from.c)+(8-best.from.r)+' to '+String.fromCharCode(97+best.to.c)+(8-best.to.r)+'. but i would have done something better.');
 }
-
-// ===== CHEATING =====
 function objDoCheat(){
   if(Math.random()<0.35){
     objCheating=true;objCheatType=objCheatTypes[Math.floor(Math.random()*objCheatTypes.length)];
@@ -349,8 +374,6 @@ function applyPenalty(color){
   if(!gameState.penaltySquares)gameState.penaltySquares=[];
   gameState.penaltySquares.push({r:frontR,c:frontC,color:color});
 }
-
-// ===== AI =====
 function aiMove(){
   if(gameOver)return;
   if(Math.random()<0.15)objDoCheat();
@@ -373,8 +396,6 @@ function aiMove(){
   if(objCheating&&Math.random()<0.5){objCheating=false;objCheatType=null;}
 }
 function endGame(msg){gameOver=true;document.getElementById('status').textContent=msg;if(msg.includes('win'))playWin();else playLose();objSpeak(msg);}
-
-// ===== RENDERING =====
 const pieceSymbols={'K':{w:'♔',b:'♚'},'Q':{w:'♕',b:'♛'},'R':{w:'♖',b:'♜'},'B':{w:'♗',b:'♝'},'N':{w:'♘',b:'♞'},'P':{w:'♙',b:'♟'}};
 function renderBoard(){
   const boardEl=document.getElementById('board');boardEl.innerHTML='';
@@ -431,19 +452,11 @@ const bookPages=[];
 let currentPage=0;
 function buildBookPages(){
   bookPages.length=0;
-  // normal rules page
   bookPages.push({title:'normal rules',rules:normalRules.map(r=>({text:r,type:'normal'}))});
-  // mutations page(s)
   if(activeMutations.length>0){
     const mutRules=activeMutations.map(m=>({text:m,type:'mutation'}));
-    // split into chunks of 8
-    for(let i=0;i<mutRules.length;i+=8){
-      bookPages.push({title:'obj mutations',rules:mutRules.slice(i,i+8)});
-    }
-  } else {
-    bookPages.push({title:'obj mutations',rules:[{text:'no mutations yet. obj hasn\'t changed the rules... yet.',type:'mutation'}]});
-  }
-  // cheating rules
+    for(let i=0;i<mutRules.length;i+=8){bookPages.push({title:'obj mutations',rules:mutRules.slice(i,i+8)});}
+  }else{bookPages.push({title:'obj mutations',rules:[{text:'no mutations yet. obj hasn\'t changed the rules... yet.',type:'mutation'}]});}
   bookPages.push({title:'cheating rules',rules:[
     {text:'you can cheat by clicking the cheat button',type:'normal'},
     {text:'obj can also cheat randomly',type:'mutation'},
@@ -454,7 +467,7 @@ function buildBookPages(){
   ]});
 }
 function renderBookPage(){
-  const left=document.getElementById('bookLeft'),right=document.getElementById('bookRight');
+  const left=document.getElementById('pageLeft'),right=document.getElementById('pageRight');
   left.innerHTML='';right.innerHTML='';
   const page=bookPages[currentPage];
   if(!page)return;
@@ -468,27 +481,23 @@ function renderBookPage(){
   }
   document.getElementById('bookPrev').disabled=currentPage<=0;
   document.getElementById('bookNext').disabled=currentPage>=bookPages.length-1;
+  document.getElementById('pageIndicator').textContent=(currentPage+1)+' / '+bookPages.length;
 }
-function openBook(){
-  buildBookPages();currentPage=0;
+function openBook(){buildBookPages();currentPage=0;playBookOpen();
   const cover=document.getElementById('bookCover');const pages=document.getElementById('bookPages');
-  cover.classList.add('opened');playBookOpen();
-  setTimeout(()=>{cover.style.display='none';pages.style.display='flex';renderBookPage();},400);
+  cover.style.transform='rotateY(-180deg)';cover.style.opacity='0';
+  setTimeout(()=>{cover.style.display='none';pages.classList.add('show');renderBookPage();},500);
   document.getElementById('bookOverlay').classList.add('show');
 }
 function closeBook(){
   const cover=document.getElementById('bookCover');const pages=document.getElementById('bookPages');
-  pages.style.display='none';cover.style.display='flex';cover.classList.remove('opened');
+  pages.classList.remove('show');cover.style.display='flex';cover.style.transform='rotateY(0deg)';cover.style.opacity='1';
   document.getElementById('bookOverlay').classList.remove('show');
 }
-function nextPage(){
-  if(currentPage<bookPages.length-1){currentPage++;playPageTurn();const p=document.getElementById('bookPages');p.classList.add('page-turn');setTimeout(()=>p.classList.remove('page-turn'),600);renderBookPage();}
-}
-function prevPage(){
-  if(currentPage>0){currentPage--;playPageTurn();const p=document.getElementById('bookPages');p.classList.add('page-turn');setTimeout(()=>p.classList.remove('page-turn'),600);renderBookPage();}
-}
+function nextPage(){if(currentPage<bookPages.length-1){currentPage++;playPageTurn();const shadow=document.getElementById('pageShadow');shadow.classList.add('show');setTimeout(()=>shadow.classList.remove('show'),700);renderBookPage();}}
+function prevPage(){if(currentPage>0){currentPage--;playPageTurn();const shadow=document.getElementById('pageShadow');shadow.classList.add('show');setTimeout(()=>shadow.classList.remove('show'),700);renderBookPage();}}
 
-// ===== MUTATE (patched) =====
+// ===== MUTATE =====
 function mutateRules(){
   const m=mutations[Math.floor(Math.random()*mutations.length)];
   m.apply(gameState);logRule(m.desc);objSpeak(m.desc+'. deal with it.');
@@ -502,8 +511,6 @@ function mutateRules(){
   playMutate();
 }
 function updateRulebook(){buildBookPages();}
-
-// ===== LOG RULE =====
 function logRule(text){const log=document.getElementById('ruleLog');const div=document.createElement('div');div.textContent='> '+text;log.appendChild(div);log.scrollTop=log.scrollHeight;}
 
 // ===== NEW GAME =====
