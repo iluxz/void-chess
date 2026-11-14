@@ -6,9 +6,7 @@ resizeP();window.addEventListener('resize',resizeP);
 for(let i=0;i<60;i++)particles.push({x:Math.random()*pW,y:Math.random()*pH,vx:(Math.random()-.5)*.3,vy:(Math.random()-.5)*.3,r:Math.random()*1.5+.5,hue:Math.random()<.5?210:270});
 function drawP(){pCtx.clearRect(0,0,pW,pH);for(const p of particles){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=pW;if(p.x>pW)p.x=0;if(p.y<0)p.y=pH;if(p.y>pH)p.y=0;pCtx.beginPath();pCtx.arc(p.x,p.y,p.r,0,Math.PI*2);pCtx.fillStyle=`hsla(${p.hue},70%,60%,0.4)`;pCtx.fill();}requestAnimationFrame(drawP);}
 drawP();
-
-const pieceSymbols={'K':{w:'♔',b:'♚'},'Q':{w:'♕',b:'♛'},'R':{w:'♖',b:'♜'},'B':{w:'♗',b:'♝'},'N':{w:'♘',b:'♞'},'P':{w:'♙',b:'♟'}};
-
+const pieceSymbols={'K':{w:'\u2654',b:'\u265A'},'Q':{w:'\u2655',b:'\u265B'},'R':{w:'\u2656',b:'\u265C'},'B':{w:'\u2657',b:'\u265D'},'N':{w:'\u2658',b:'\u265E'},'P':{w:'\u2659',b:'\u265F'}};
 function renderBoard(){
   const boardEl=document.getElementById('board');boardEl.innerHTML='';
   for(let r=0;r<8;r++)for(let c=0;c<8;c++){
@@ -29,33 +27,8 @@ function renderBoard(){
   if(cw){cw.innerHTML='';for(const p of capturedPieces.w){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cw.appendChild(s);}}
   if(cb){cb.innerHTML='';for(const p of capturedPieces.b){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cb.appendChild(s);}}
 }
-
-function getLegalMoves(r,c,bs){
-  const piece=bs[r][c];if(!piece)return[];
-  const pseudo=getMoves(r,c,bs);
-  return pseudo.filter(m=>{
-    const saved={board:bs.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};
-    makeMove(m.from,m.to,m.special,false);
-    const inCheck=isCheck(piece.color);
-    board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;
-    return !inCheck;
-  });
-}
-
-function getLegalMoves(r,c,bs){
-  const piece=bs[r][c];if(!piece)return[];
-  const pseudo=getMoves(r,c,bs);
-  return pseudo.filter(m=>{
-    const saved={board:bs.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};
-    makeMove(m.from,m.to,m.special,false);
-    const inCheck=isCheck(piece.color);
-    board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;
-    return !inCheck;
-  });
-}
 function onCellClick(r,c){
   if(gameOver||turn!==WHITE)return;
-  console.log('onCellClick:', r, c, 'selected:', selected ? selected.r+','+selected.c : 'null', 'board[r][c]:', board[r][c]?.type);
   const piece=board[r][c];
   if(selected){
     const move=validMoves.find(m=>m.to.r===r&&m.to.c===c);
@@ -72,86 +45,33 @@ function onCellClick(r,c){
     if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();}
   }
 }
-
-const normalRules=[
-  'king: moves one square in any direction',
-  'queen: moves any number of squares in any direction',
-  'rook: moves any number of squares horizontally or vertically',
-  'bishop: moves any number of squares diagonally',
-  'knight: moves in L-shape (2+1), can jump over pieces',
-  'pawn: moves forward one square, captures diagonally',
-  'castling: king and rook swap if path is clear',
-  'en passant: pawn can capture passing pawn',
-  'promotion: pawn becomes queen at end row',
-  'check: king under attack, must escape',
-  'checkmate: no legal moves in check = loss',
-  'stalemate: no legal moves, not in check = draw',
-];
-const bookPages=[];
-let currentPage=0;
-let isFlipping=false;
-function buildBookPages(){
-  bookPages.length=0;
-  bookPages.push({title:'normal rules',rules:normalRules.map(r=>({text:r,type:'normal'}))});
-  if(activeMutations.length>0){
-    const mutRules=activeMutations.map(m=>({text:m,type:'mutation'}));
-    for(let i=0;i<mutRules.length;i+=8){bookPages.push({title:'obj mutations',rules:mutRules.slice(i,i+8)});}
-  }else{bookPages.push({title:'obj mutations',rules:[{text:'no mutations yet. obj hasn\'t changed the rules... yet.',type:'mutation'}]});}
-  bookPages.push({title:'cheating rules',rules:[
-    {text:'you can cheat by clicking the cheat button',type:'normal'},
-    {text:'obj can also cheat randomly',type:'mutation'},
-    {text:'accuse button: catch obj cheating for penalty',type:'normal'},
-    {text:'false accusation penalizes you instead',type:'mutation'},
-    {text:'penalty: opposite team captures piece in front of king',type:'mutation'},
-    {text:'king cannot recapture the penalized piece',type:'mutation'},
-  ]});
-}
-function renderBookPage(){
-  const left=document.getElementById('pageLeftContent'),right=document.getElementById('pageRightContent');
-  left.innerHTML='';right.innerHTML='';
-  const page=bookPages[currentPage];
-  if(!page)return;
-  const h=document.createElement('h3');h.textContent=page.title;left.appendChild(h);
-  const half=Math.ceil(page.rules.length/2);
-  for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+page.rules[i].type;div.textContent=page.rules[i].text;left.appendChild(div);}
-  if(currentPage+1<bookPages.length){
-    const nextPage=bookPages[currentPage+1];
-    const h2=document.createElement('h3');h2.textContent=nextPage.title;right.appendChild(h2);
-    for(const r of nextPage.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;right.appendChild(div);}
+function getLegalMoves(r,c,bs){
+  const piece=bs[r][c];if(!piece)return[];
+  const pseudo=getMoves(r,c,bs);
+  const savedBoard=bs.map(row=>row.map(p=>p?{...p}:null));
+  const savedCastling={...castling};const savedEP=enPassant?{...enPassant}:null;const savedCount=moveCount;
+  const result=[];
+  for(const m of pseudo){
+    for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++)board[rr][cc]=savedBoard[rr][cc]?{...savedBoard[rr][cc]}:null;
+    castling={...savedCastling};enPassant=savedEP?{...savedEP}:null;moveCount=savedCount;
+    makeMove(m.from,m.to,m.special,false);
+    const inCheck=isCheck(piece.color);
+    for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++)board[rr][cc]=savedBoard[rr][cc]?{...savedBoard[rr][cc]}:null;
+    castling={...savedCastling};enPassant=savedEP?{...savedEP}:null;moveCount=savedCount;
+    if(!inCheck)result.push(m);
   }
-  document.getElementById('bookPrev').disabled=currentPage<=0;
-  document.getElementById('bookNext').disabled=currentPage>=bookPages.length-1;
-  document.getElementById('pageIndicator').textContent=(currentPage+1)+' / '+bookPages.length;
+  for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++)board[rr][cc]=savedBoard[rr][cc]?{...savedBoard[rr][cc]}:null;
+  castling={...savedCastling};enPassant=savedEP?{...savedEP}:null;moveCount=savedCount;
+  return result;
 }
-function openBook(){buildBookPages();currentPage=0;playBookOpen();
-  const cover=document.getElementById('bookCover');const open=document.getElementById('bookOpen');
-  cover.style.transition='transform 0.8s cubic-bezier(.4,0,.2,1), opacity 0.6s';
-  cover.style.transform='rotateY(-180deg)';cover.style.opacity='0';
-  setTimeout(()=>{cover.style.display='none';open.classList.add('show');renderBookPage();},600);
-  document.getElementById('bookOverlay').classList.add('show');
-}
-function closeBook(){
-  const cover=document.getElementById('bookCover');const open=document.getElementById('bookOpen');
-  open.classList.remove('show');cover.style.display='flex';
-  cover.style.transform='rotateY(0deg)';cover.style.opacity='1';
-  document.getElementById('bookOverlay').classList.remove('show');
-}
-function nextPage(){
-  if(isFlipping||currentPage>=bookPages.length-1)return;
-  isFlipping=true;playPageTurn();
-  const pages=document.getElementById('bookOpen');
-  pages.style.transition='opacity .3s, transform .3s';
-  pages.style.opacity='0.3';pages.style.transform='scale(0.97)';
-  setTimeout(()=>{currentPage++;renderBookPage();pages.style.opacity='1';pages.style.transform='scale(1)';setTimeout(()=>{isFlipping=false;},350);},350);
-}
-function prevPage(){
-  if(isFlipping||currentPage<=0)return;
-  isFlipping=true;playPageTurn();
-  const pages=document.getElementById('bookOpen');
-  pages.style.transition='opacity .3s, transform .3s';
-  pages.style.opacity='0.3';pages.style.transform='scale(0.97)';
-  setTimeout(()=>{currentPage--;renderBookPage();pages.style.opacity='1';pages.style.transform='scale(1)';setTimeout(()=>{isFlipping=false;},350);},350);
-}
+const normalRules=['king: moves one square in any direction','queen: moves any number of squares in any direction','rook: moves any number of squares horizontally or vertically','bishop: moves any number of squares diagonally','knight: moves in L-shape (2+1), can jump over pieces','pawn: moves forward one square, captures diagonally','castling: king and rook swap if path is clear','en passant: pawn can capture passing pawn','promotion: pawn becomes queen at end row','check: king under attack, must escape','checkmate: no legal moves in check = loss','stalemate: no legal moves, not in check = draw'];
+const bookPages=[];let currentPage=0;let isFlipping=false;
+function buildBookPages(){bookPages.length=0;bookPages.push({title:'normal rules',rules:normalRules.map(r=>({text:r,type:'normal'}))});if(activeMutations.length>0){const mutRules=activeMutations.map(m=>({text:m,type:'mutation'}));for(let i=0;i<mutRules.length;i+=8){bookPages.push({title:'obj mutations',rules:mutRules.slice(i,i+8)});}}else{bookPages.push({title:'obj mutations',rules:[{text:'no mutations yet. obj hasn\'t changed the rules... yet.',type:'mutation'}]});}bookPages.push({title:'cheating rules',rules:[{text:'you can cheat by clicking the cheat button',type:'normal'},{text:'obj can also cheat randomly',type:'mutation'},{text:'accuse button: catch obj cheating for penalty',type:'normal'},{text:'false accusation penalizes you instead',type:'mutation'},{text:'penalty: opposite team captures piece in front of king',type:'mutation'},{text:'king cannot recapture the penalized piece',type:'mutation'}]});}
+function renderBookPage(){const left=document.getElementById('pageLeftContent'),right=document.getElementById('pageRightContent');left.innerHTML='';right.innerHTML='';const page=bookPages[currentPage];if(!page)return;const h=document.createElement('h3');h.textContent=page.title;left.appendChild(h);const half=Math.ceil(page.rules.length/2);for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+page.rules[i].type;div.textContent=page.rules[i].text;left.appendChild(div);}if(currentPage+1<bookPages.length){const nextPage=bookPages[currentPage+1];const h2=document.createElement('h3');h2.textContent=nextPage.title;right.appendChild(h2);for(const r of nextPage.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;right.appendChild(div);}}document.getElementById('bookPrev').disabled=currentPage<=0;document.getElementById('bookNext').disabled=currentPage>=bookPages.length-1;document.getElementById('pageIndicator').textContent=(currentPage+1)+' / '+bookPages.length;}
+function openBook(){buildBookPages();currentPage=0;playBookOpen();const cover=document.getElementById('bookCover');const open=document.getElementById('bookOpen');cover.style.transition='transform 0.8s cubic-bezier(.4,0,.2,1), opacity 0.6s';cover.style.transform='rotateY(-180deg)';cover.style.opacity='0';setTimeout(()=>{cover.style.display='none';open.classList.add('show');renderBookPage();},600);document.getElementById('bookOverlay').classList.add('show');}
+function closeBook(){const cover=document.getElementById('bookCover');const open=document.getElementById('bookOpen');open.classList.remove('show');cover.style.display='flex';cover.style.transform='rotateY(0deg)';cover.style.opacity='1';document.getElementById('bookOverlay').classList.remove('show');}
+function nextPage(){if(isFlipping||currentPage>=bookPages.length-1)return;isFlipping=true;playPageTurn();const pages=document.getElementById('bookOpen');pages.style.transition='opacity .3s, transform .3s';pages.style.opacity='0.3';pages.style.transform='scale(0.97)';setTimeout(()=>{currentPage++;renderBookPage();pages.style.opacity='1';pages.style.transform='scale(1)';setTimeout(()=>{isFlipping=false;},350);},350);}
+function prevPage(){if(isFlipping||currentPage<=0)return;isFlipping=true;playPageTurn();const pages=document.getElementById('bookOpen');pages.style.transition='opacity .3s, transform .3s';pages.style.opacity='0.3';pages.style.transform='scale(0.97)';setTimeout(()=>{currentPage--;renderBookPage();pages.style.opacity='1';pages.style.transform='scale(1)';setTimeout(()=>{isFlipping=false;},350);},350);}
 function updateRulebook(){buildBookPages();}
 function logRule(text){const log=document.getElementById('ruleLog');const div=document.createElement('div');div.textContent='> '+text;log.appendChild(div);log.scrollTop=log.scrollHeight;}
 function newGame(){
@@ -251,41 +171,61 @@ function applyPenalty(color){
   if(!gameState.penaltySquares)gameState.penaltySquares=[];
   gameState.penaltySquares.push({r:frontR,c:frontC,color:color});
 }
-function aiMove(){
-  if(gameOver)return;
-  if(Math.random()<0.15)objDoCheat();
-  const moves=[];
-  for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK){const mvs=getMoves(r,c,board);for(const m of mvs)moves.push(m);}}
-  if(moves.length===0){if(isCheck(BLACK))endGame('checkmate! you win... for now.');else endGame('stalemate. draw.');return;}
-  const captures=moves.filter(m=>m.capture);
-  const pool=captures.length>0&&Math.random()<0.7?captures:moves;
-  const move=pool[Math.floor(Math.random()*pool.length)];
-  makeMove(move.from,move.to,move.special);renderBoard();
-  if(isCheck(WHITE)){document.getElementById('status').textContent='check!';document.getElementById('status').style.color='#ff4444';}
-  else{document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';}
-  let playerMoves=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)playerMoves+=getMoves(r,c,board).length;}
-  if(playerMoves===0){if(isCheck(WHITE))endGame('checkmate. i win. as expected.');else endGame('stalemate. draw.');}
-  if(gameState.knightQueen>0)gameState.knightQueen--;
-  if(gameState.rookPhase>0)gameState.rookPhase--;
-  if(Math.random()<0.25)setTimeout(mutateRules,800);
-  if(gameState.extraMove){gameState.extraMove=false;setTimeout(aiMove,600);}
-  if(objCheating&&Math.random()<0.5){objCheating=false;objCheatType=null;}
+function onCellClick(r,c){
+  if(gameOver||turn!==WHITE)return;
+  const piece=board[r][c];
+  if(selected){
+    const move=validMoves.find(m=>m.to.r===r&&m.to.c===c);
+    if(move){
+      const kingPiece=board[selected.r][selected.c];
+      if(kingPiece&&kingPiece.type==='K'&&gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c&&p.color===WHITE)){objSpeak('your king cannot take that piece. penalty rules.');return;}
+      makeMove(selected,{r,c},move.special);hintMove=null;validMoves=[];selected=null;renderBoard();turn=BLACK;
+      document.getElementById('status').textContent='obj thinking...';document.getElementById('status').style.color='#5fa8d3';
+      setTimeout(()=>{aiMove();turn=WHITE;},500+Math.random()*400);return;
+    }
+    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();return;}
+    selected=null;validMoves=[];renderBoard();
+  }else{
+    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();}
+  }
 }
-function endGame(msg){gameOver=true;document.getElementById('status').textContent=msg;if(msg.includes('win'))playWin();else playLose();objSpeak(msg);}
-function mutateRules(){
-  const m=mutations[Math.floor(Math.random()*mutations.length)];
-  m.apply(gameState);logRule(m.desc);objSpeak(m.desc+'. deal with it.');
-  activeMutations.push(m.desc);updateRulebook();
-  if(gameState.boardFlip){board=board.map(row=>[...row].reverse()).reverse();gameState.boardFlip=false;renderBoard();}
-  if(gameState.pieceSwap){for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c])board[r][c].color=board[r][c].color===WHITE?BLACK:WHITE;}gameState.pieceSwap=false;renderBoard();}
-  if(gameState.queenSteal){for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].type==='Q'&&board[r][c].color===WHITE)board[r][c].color=BLACK;}gameState.queenSteal=false;renderBoard();}
-  if(gameState.randomVanish){const pieces=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)pieces.push({r,c});}if(pieces.length>0){const p=pieces[Math.floor(Math.random()*pieces.length)];board[p.r][p.c]=null;}gameState.randomVanish=false;renderBoard();}
-  if(gameState.chaosBoard){const all=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c])all.push(board[r][c]);}for(let i=0;i<8;i++)for(let j=0;j<8;j++)board[i][j]=null;for(const p of all){let placed=false;while(!placed){const r=Math.floor(Math.random()*8),c=Math.floor(Math.random()*8);if(!board[r][c]){board[r][c]=p;placed=true;}}}gameState.chaosBoard=false;renderBoard();}
-  const b=document.getElementById('board');b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);
+function getLegalMoves(r,c,bs){
+  const piece=bs[r][c];if(!piece)return[];
+  const pseudo=getMoves(r,c,bs);
+  const savedBoard=bs.map(row=>row.map(p=>p?{...p}:null));
+  const savedCastling={...castling};const savedEP=enPassant?{...enPassant}:null;const savedCount=moveCount;
+  const result=[];
+  for(const m of pseudo){
+    for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++)board[rr][cc]=savedBoard[rr][cc]?{...savedBoard[rr][cc]}:null;
+    castling={...savedCastling};enPassant=savedEP?{...savedEP}:null;moveCount=savedCount;
+    makeMove(m.from,m.to,m.special,false);
+    const inCheck=isCheck(piece.color);
+    for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++)board[rr][cc]=savedBoard[rr][cc]?{...savedBoard[rr][cc]}:null;
+    castling={...savedCastling};enPassant=savedEP?{...savedEP}:null;moveCount=savedCount;
+    if(!inCheck)result.push(m);
+  }
+  for(let rr=0;rr<8;rr++)for(let cc=0;cc<8;cc++)board[rr][cc]=savedBoard[rr][cc]?{...savedBoard[rr][cc]}:null;
+  castling={...savedCastling};enPassant=savedEP?{...savedEP}:null;moveCount=savedCount;
+  return result;
 }
+// ===== BOOK UI =====
+const normalRules=['king: moves one square in any direction','queen: moves any number of squares in any direction','rook: moves any number of squares horizontally or vertically','bishop: moves any number of squares diagonally','knight: moves in L-shape (2+1), can jump over pieces','pawn: moves forward one square, captures diagonally','castling: king and rook swap if path is clear','en passant: pawn can capture passing pawn','promotion: pawn becomes queen at end row','check: king under attack, must escape','checkmate: no legal moves in check = loss','stalemate: no legal moves, not in check = draw'];
+const bookPages=[];let currentPage=0;let isFlipping=false;
+function buildBookPages(){bookPages.length=0;bookPages.push({title:'normal rules',rules:normalRules.map(r=>({text:r,type:'normal'}))});if(activeMutations.length>0){const mutRules=activeMutations.map(m=>({text:m,type:'mutation'}));for(let i=0;i<mutRules.length;i+=8){bookPages.push({title:'obj mutations',rules:mutRules.slice(i,i+8)});}}else{bookPages.push({title:'obj mutations',rules:[{text:'no mutations yet. obj hasn\'t changed the rules... yet.',type:'mutation'}]});}bookPages.push({title:'cheating rules',rules:[{text:'you can cheat by clicking the cheat button',type:'normal'},{text:'obj can also cheat randomly',type:'mutation'},{text:'accuse button: catch obj cheating for penalty',type:'normal'},{text:'false accusation penalizes you instead',type:'mutation'},{text:'penalty: opposite team captures piece in front of king',type:'mutation'},{text:'king cannot recapture the penalized piece',type:'mutation'}]});}
+function renderBookPage(){const left=document.getElementById('pageLeftContent'),right=document.getElementById('pageRightContent');left.innerHTML='';right.innerHTML='';const page=bookPages[currentPage];if(!page)return;const h=document.createElement('h3');h.textContent=page.title;left.appendChild(h);const half=Math.ceil(page.rules.length/2);for(let i=0;i<half;i++){const div=document.createElement('div');div.className='rule-item '+page.rules[i].type;div.textContent=page.rules[i].text;left.appendChild(div);}if(currentPage+1<bookPages.length){const nextPage=bookPages[currentPage+1];const h2=document.createElement('h3');h2.textContent=nextPage.title;right.appendChild(h2);for(const r of nextPage.rules){const div=document.createElement('div');div.className='rule-item '+r.type;div.textContent=r.text;right.appendChild(div);}}document.getElementById('bookPrev').disabled=currentPage<=0;document.getElementById('bookNext').disabled=currentPage>=bookPages.length-1;document.getElementById('pageIndicator').textContent=(currentPage+1)+' / '+bookPages.length;}
+function openBook(){buildBookPages();currentPage=0;playBookOpen();const cover=document.getElementById('bookCover');const open=document.getElementById('bookOpen');cover.style.transition='transform 0.8s cubic-bezier(.4,0,.2,1), opacity 0.6s';cover.style.transform='rotateY(-180deg)';cover.style.opacity='0';setTimeout(()=>{cover.style.display='none';open.classList.add('show');renderBookPage();},600);document.getElementById('bookOverlay').classList.add('show');}
+function closeBook(){const cover=document.getElementById('bookCover');const open=document.getElementById('bookOpen');open.classList.remove('show');cover.style.display='flex';cover.style.transform='rotateY(0deg)';cover.style.opacity='1';document.getElementById('bookOverlay').classList.remove('show');}
+function nextPage(){if(isFlipping||currentPage>=bookPages.length-1)return;isFlipping=true;playPageTurn();const pages=document.getElementById('bookOpen');pages.style.transition='opacity .3s, transform .3s';pages.style.opacity='0.3';pages.style.transform='scale(0.97)';setTimeout(()=>{currentPage++;renderBookPage();pages.style.opacity='1';pages.style.transform='scale(1)';setTimeout(()=>{isFlipping=false;},350);},350);}
+function prevPage(){if(isFlipping||currentPage<=0)return;isFlipping=true;playPageTurn();const pages=document.getElementById('bookOpen');pages.style.transition='opacity .3s, transform .3s';pages.style.opacity='0.3';pages.style.transform='scale(0.97)';setTimeout(()=>{currentPage--;renderBookPage();pages.style.opacity='1';pages.style.transform='scale(1)';setTimeout(()=>{isFlipping=false;},350);},350);}
 function updateRulebook(){buildBookPages();}
-function logRule(text){const log=document.getElementById('ruleLog');const div=document.createElement('div');div.textContent='> '+text;log.appendChild(div);log.scrollTop=log.scrollHeight;}
-
+// ===== NEW GAME =====
+function newGame(){
+  board=initBoard();turn=WHITE;selected=null;validMoves=[];lastMove=null;gameOver=false;moveHistory=[];castling={wK:true,wQ:true,bK:true,bQ:true};enPassant=null;capturedPieces={w:[],b:[]};moveCount=0;hintMove=null;
+  gameState={bishopTeleport:false,knightQueen:0,pawnBackwards:false,rookPhase:0,extraMove:false,boardFlip:false,pieceSwap:false,queenSteal:false,freePromotion:false,knightJump:false,bishopLaser:false,rookLaser:false,kingRampage:false,pawnSprint:false,randomVanish:false,mirrorMove:false,chaosBoard:false,doubleAgent:false,penaltySquares:[]};
+  activeMutations=[];objCheating=false;playerCheating=false;objCheatType=null;
+  document.getElementById('ruleLog').innerHTML='';document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';
+  objSpeak(objLines[0]);updateRulebook();renderBoard();
+}
 // ===== EVENTS =====
 document.getElementById('undoBtn').addEventListener('click',undoMove);
 document.getElementById('hintBtn').addEventListener('click',getHint);
