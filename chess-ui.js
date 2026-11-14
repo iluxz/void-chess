@@ -2,8 +2,7 @@
 // 3D board with CSS transforms, spinnable camera, obj
 
 // ===== 3D BOARD SETUP =====
-console.log('chess-ui.js loading...');
-window.__chessLoaded = true;
+// chess-ui.js loaded
 const boardWrap = document.getElementById('boardWrap');
 const board3d = document.getElementById('board3d');
 // Replace canvas with a div-based 3D board
@@ -14,6 +13,16 @@ const boardPlane = document.createElement('div');
 boardPlane.id = 'boardPlane';
 boardPlane.style.cssText = 'position:absolute;top:50%;left:50%;width:min(60vh,60vw);height:min(60vh,60vw);transform:translate(-50%,-50%) rotateX(55deg);transform-style:preserve-3d;transition:transform 0.1s;';
 boardContainer.appendChild(boardPlane);
+
+// Event delegation for clicks
+boardPlane.addEventListener('click', (e) => {
+  const sq = e.target.closest('.sq3d');
+  if (!sq) return;
+  const r = parseInt(sq.dataset.r);
+  const c = parseInt(sq.dataset.c);
+  if (isNaN(r) || isNaN(c)) return;
+  onCellClick(r, c);
+});
 if (board3d && board3d.parentNode === boardWrap) {
   boardWrap.replaceChild(boardContainer, board3d);
 } else {
@@ -29,7 +38,7 @@ for (let r = 0; r < 8; r++) {
     sq.style.cssText = `position:absolute;width:12.5%;height:12.5%;left:${c * 12.5}%;top:${r * 12.5}%;display:flex;align-items:center;justify-content:center;font-size:2.5vh;cursor:pointer;transform-style:preserve-3d;transition:background .15s;`;
     sq.dataset.r = r;
     sq.dataset.c = c;
-    sq.addEventListener('click', () => onCellClick(r, c));
+    // click handler attached via event delegation on boardPlane
     boardPlane.appendChild(sq);
     squares3d.push(sq);
   }
