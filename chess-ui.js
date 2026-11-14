@@ -30,19 +30,22 @@ for (let r = 0; r < 8; r++) {
 }
 
 // Camera state
-let rotY = 0;
+let rotX = 55; // tilt angle
+let rotY = 0; // horizontal rotation
 let zoom = 1;
 let isRotating = false;
 let lastMouse = { x: 0, y: 0 };
 
-let mouseDownPos = null;
 boardContainer.addEventListener('mousedown', (e) => {
+  // Right-click or middle-click anywhere to rotate
   if (e.button === 2 || e.button === 1) {
     isRotating = true;
     lastMouse = { x: e.clientX, y: e.clientY };
     boardContainer.style.cursor = 'grabbing';
     e.preventDefault();
-  } else if (e.button === 0 && (e.target === boardContainer || e.target === boardPlane || e.target.id === 'boardWrap')) {
+  }
+  // Left-click on empty space (not on a square) to rotate
+  else if (e.button === 0 && !e.target.classList.contains('sq3d')) {
     isRotating = true;
     lastMouse = { x: e.clientX, y: e.clientY };
     boardContainer.style.cursor = 'grabbing';
@@ -53,8 +56,10 @@ boardContainer.addEventListener('mousedown', (e) => {
 window.addEventListener('mousemove', (e) => {
   if (!isRotating) return;
   const dx = e.clientX - lastMouse.x;
+  const dy = e.clientY - lastMouse.y;
   rotY += dx * 0.5;
-  boardPlane.style.transform = `translate(-50%,-50%) rotateX(55deg) rotateY(${rotY}deg) scale(${zoom})`;
+  rotX = Math.max(10, Math.min(85, rotX - dy * 0.3));
+  boardPlane.style.transform = `translate(-50%,-50%) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${zoom})`;
   lastMouse = { x: e.clientX, y: e.clientY };
 });
 
@@ -65,7 +70,7 @@ window.addEventListener('mouseup', () => {
 boardContainer.addEventListener('wheel', (e) => {
   e.preventDefault();
   zoom = Math.max(0.5, Math.min(2, zoom - e.deltaY * 0.001));
-  boardPlane.style.transform = `translate(-50%,-50%) rotateX(55deg) rotateY(${rotY}deg) scale(${zoom})`;
+  boardPlane.style.transform = `translate(-50%,-50%) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${zoom})`;
 }, { passive: false });
 
 boardContainer.addEventListener('contextmenu', (e) => e.preventDefault());
