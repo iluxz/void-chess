@@ -30,23 +30,16 @@ function renderBoard(){
   if(cb){cb.innerHTML='';for(const p of capturedPieces.b){const s=document.createElement('span');s.className='piece '+(p.color===WHITE?'white':'black');s.textContent=pieceSymbols[p.type][p.color];s.style.fontSize='18px';cb.appendChild(s);}}
 }
 
-function onCellClick(r,c){
-  if(gameOver||turn!==WHITE)return;
-  const piece=board[r][c];
-  if(selected){
-    const move=validMoves.find(m=>m.to.r===r&&m.to.c===c);
-    if(move){
-      const kingPiece=board[selected.r][selected.c];
-      if(kingPiece&&kingPiece.type==='K'&&gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c&&p.color===WHITE)){objSpeak('your king cannot take that piece. penalty rules.');return;}
-      makeMove(selected,{r,c},move.special);hintMove=null;renderBoard();turn=BLACK;
-      document.getElementById('status').textContent='obj thinking...';document.getElementById('status').style.color='#5fa8d3';
-      setTimeout(()=>{aiMove();turn=WHITE;},500+Math.random()*400);selected=null;validMoves=[];return;
-    }
-    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();return;}
-    selected=null;validMoves=[];renderBoard();
-  }else{
-    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();}
-  }
+function getLegalMoves(r,c,bs){
+  const piece=bs[r][c];if(!piece)return[];
+  const pseudo=getMoves(r,c,bs);
+  return pseudo.filter(m=>{
+    const saved={board:bs.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};
+    makeMove(m.from,m.to,m.special,false);
+    const inCheck=isCheck(piece.color);
+    board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;
+    return !inCheck;
+  });
 }
 
 function getLegalMoves(r,c,bs){
@@ -59,6 +52,24 @@ function getLegalMoves(r,c,bs){
     board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;
     return !inCheck;
   });
+}
+function onCellClick(r,c){
+  if(gameOver||turn!==WHITE)return;
+  const piece=board[r][c];
+  if(selected){
+    const move=validMoves.find(m=>m.to.r===r&&m.to.c===c);
+    if(move){
+      const kingPiece=board[selected.r][selected.c];
+      if(kingPiece&&kingPiece.type==='K'&&gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c&&p.color===WHITE)){objSpeak('your king cannot take that piece. penalty rules.');return;}
+      makeMove(selected,{r,c},move.special);hintMove=null;validMoves=[];selected=null;renderBoard();turn=BLACK;
+      document.getElementById('status').textContent='obj thinking...';document.getElementById('status').style.color='#5fa8d3';
+      setTimeout(()=>{aiMove();turn=WHITE;},500+Math.random()*400);return;
+    }
+    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();return;}
+    selected=null;validMoves=[];renderBoard();
+  }else{
+    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();}
+  }
 }
 
 const normalRules=[
@@ -168,7 +179,7 @@ function undoMove(){
 }
 function getHint(){
   if(gameOver||turn!==WHITE)return;
-  const allMoves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE){const mvs=getMoves(r,c,board).filter(m=>{const saved={board:board.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};makeMove(m.from,m.to,m.special,false);const inCheck=isCheck(WHITE);board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;return !inCheck;});for(const m of mvs)allMoves.push(m);}}
+  const allMoves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE){const mvs=getMoves(r,c,board);for(const m of mvs)allMoves.push(m);}}
   if(allMoves.length===0){objSpeak('no moves. you lose.');return;}
   const captures=allMoves.filter(m=>m.capture);
   let best=captures.length>0?captures[Math.floor(Math.random()*captures.length)]:allMoves[Math.floor(Math.random()*allMoves.length)];
@@ -273,131 +284,7 @@ function mutateRules(){
 }
 function updateRulebook(){buildBookPages();}
 function logRule(text){const log=document.getElementById('ruleLog');const div=document.createElement('div');div.textContent='> '+text;log.appendChild(div);log.scrollTop=log.scrollHeight;}
-function newGame(){
-  board=initBoard();turn=WHITE;selected=null;validMoves=[];lastMove=null;gameOver=false;moveHistory=[];castling={wK:true,wQ:true,bK:true,bQ:true};enPassant=null;capturedPieces={w:[],b:[]};moveCount=0;hintMove=null;
-  gameState={bishopTeleport:false,knightQueen:0,pawnBackwards:false,rookPhase:0,extraMove:false,boardFlip:false,pieceSwap:false,queenSteal:false,freePromotion:false,knightJump:false,bishopLaser:false,rookLaser:false,kingRampage:false,pawnSprint:false,randomVanish:false,mirrorMove:false,chaosBoard:false,doubleAgent:false,penaltySquares:[]};
-  activeMutations=[];objCheating=false;playerCheating=false;objCheatType=null;
-  document.getElementById('ruleLog').innerHTML='';document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';
-  objSpeak(objLines[0]);updateRulebook();renderBoard();
-}
-function undoMove(){
-  if(moveHistory.length===0)return;
-  let undone=0;
-  while(moveHistory.length>0&&undone<2){
-    const last=moveHistory.pop();
-    board=last.snapshot.board.map(row=>row.map(p=>p?{...p}:null));
-    castling={...last.snapshot.castling};enPassant=last.snapshot.enPassant?{...last.snapshot.enPassant}:null;
-    moveCount=last.snapshot.moveCount;gameState={...last.snapshot.gameState};
-    if(last.captured){const arr=capturedPieces[last.captured.color===WHITE?'w':'b'];const idx=arr.findIndex(p=>p.type===last.captured.type);if(idx>=0)arr.splice(idx,1);}
-    lastMove=moveHistory.length>0?{from:moveHistory[moveHistory.length-1].from,to:moveHistory[moveHistory.length-1].to}:null;
-    undone++;if(moveHistory.length===0)break;
-  }
-  hintMove=null;selected=null;validMoves=[];gameOver=false;
-  turn=WHITE;document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';
-  renderBoard();
-  objSpeak('...you undid that. cowardly. but effective.');
-}
-function getHint(){
-  if(gameOver||turn!==WHITE)return;
-  const allMoves=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE){const mvs=getMoves(r,c,board).filter(m=>{const saved={board:board.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};makeMove(m.from,m.to,m.special,false);const inCheck=isCheck(WHITE);board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;return !inCheck;});for(const m of mvs)allMoves.push(m);}}
-  if(allMoves.length===0){objSpeak('no moves. you lose.');return;}
-  const captures=allMoves.filter(m=>m.capture);
-  let best=captures.length>0?captures[Math.floor(Math.random()*captures.length)]:allMoves[Math.floor(Math.random()*allMoves.length)];
-  const checks=allMoves.filter(m=>{
-    const saved={board:board.map(row=>row.map(p=>p?{...p}:null)),castling:{...castling},enPassant:enPassant?{...enPassant}:null,moveCount};
-    makeMove(m.from,m.to,m.special,false);const isChk=isCheck(BLACK);
-    board=saved.board.map(row=>row.map(p=>p?{...p}:null));castling={...saved.castling};enPassant=saved.enPassant?{...saved.enPassant}:null;moveCount=saved.moveCount;
-    return isChk;
-  });
-  if(checks.length>0)best=checks[0];
-  hintMove=best;selected=null;validMoves=[best];renderBoard();
-  objSpeak('...fine. try '+String.fromCharCode(97+best.from.c)+(8-best.from.r)+' to '+String.fromCharCode(97+best.to.c)+(8-best.to.r)+'. but i would have done something better.');
-}
-function objDoCheat(){
-  if(Math.random()<0.35){
-    objCheating=true;objCheatType=objCheatTypes[Math.floor(Math.random()*objCheatTypes.length)];
-    if(objCheatType==='extra_piece'){const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const p=empty[Math.floor(Math.random()*empty.length)];board[p.r][p.c]={type:'N',color:BLACK};renderBoard();}}
-    else if(objCheatType==='piece_teleport'){const blacks=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===BLACK)blacks.push({r,c});}if(blacks.length>0){const p=blacks[Math.floor(Math.random()*blacks.length)];const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c])empty.push({r,c});}if(empty.length>0){const t=empty[Math.floor(Math.random()*empty.length)];board[t.r][t.c]=board[p.r][p.c];board[p.r][p.c]=null;renderBoard();}}}
-    else if(objCheatType==='invisible_capture'){const whites=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)whites.push({r,c});}if(whites.length>0){const p=whites[Math.floor(Math.random()*whites.length)];board[p.r][p.c]=null;renderBoard();}}
-  }
-}
-function playerDoCheat(){
-  playerCheating=true;
-  const whites=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].color===WHITE)whites.push({r,c});}
-  if(whites.length===0)return;
-  const from=whites[Math.floor(Math.random()*whites.length)];
-  const empty=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(!board[r][c]||(board[r][c].color===BLACK))empty.push({r,c});}
-  if(empty.length===0)return;
-  const to=empty[Math.floor(Math.random()*empty.length)];
-  makeMove(from,to,null);renderBoard();
-  if(Math.random()<0.3){setTimeout(()=>{objAccusePlayer();},1000);}
-  else{setTimeout(()=>{playerCheating=false;},2000);}
-}
-function objAccusePlayer(){
-  if(!playerCheating)return;playerCheating=false;
-  document.getElementById('accuseTitle').textContent='OBJ ACCUSES YOU';
-  document.getElementById('accuseMsg').textContent='i saw that. you cheated. penalty applied.';
-  document.getElementById('accuseOverlay').classList.add('show');
-  applyPenalty(WHITE);objSpeak('i saw that. you cheated. penalty.');
-  logRule('player caught cheating → penalty');
-}
-function playerAccuseObj(){
-  if(gameOver)return;
-  if(objCheating){objCheating=false;
-    document.getElementById('accuseTitle').textContent='ACCUSATION SUCCESSFUL';
-    document.getElementById('accuseMsg').textContent='you caught obj cheating. penalty applied to obj.';
-    document.getElementById('accuseOverlay').classList.add('show');applyPenalty(BLACK);
-    objSpeak('...fine. you got me. penalty.');logRule('obj caught cheating → penalty');
-  }else{
-    document.getElementById('accuseTitle').textContent='FALSE ACCUSATION';
-    document.getElementById('accuseMsg').textContent='obj was not cheating. you get the penalty instead.';
-    document.getElementById('accuseOverlay').classList.add('show');applyPenalty(WHITE);
-    objSpeak('wrong. i was playing fair. penalty for you.');logRule('false accusation → player penalized');
-  }
-}
-function closeAccuse(){document.getElementById('accuseOverlay').classList.remove('show');}
-function applyPenalty(color){
-  let kingPos=null;for(let r=0;r<8;r++)for(let c=0;c<8;c++){if(board[r][c]&&board[r][c].type==='K'&&board[r][c].color===color)kingPos={r,c};}
-  if(!kingPos)return;
-  const dir=color===WHITE?-1:1;const frontR=kingPos.r+dir,frontC=kingPos.c;
-  if(!inB(frontR,frontC))return;
-  const frontPiece=board[frontR][frontC];
-  if(frontPiece){board[frontR][frontC]=null;renderBoard();
-    const cells=document.querySelectorAll('.cell');const idx=frontR*8+frontC;
-    if(cells[idx])cells[idx].classList.add('penalty');
-    setTimeout(()=>{if(cells[idx])cells[idx].classList.remove('penalty');},2000);
-  }
-  if(!gameState.penaltySquares)gameState.penaltySquares=[];
-  gameState.penaltySquares.push({r:frontR,c:frontC,color:color});
-}
-function onCellClick(r,c){
-  if(gameOver||turn!==WHITE)return;
-  const piece=board[r][c];
-  if(selected){
-    const move=validMoves.find(m=>m.to.r===r&&m.to.c===c);
-    if(move){
-      const kingPiece=board[selected.r][selected.c];
-      if(kingPiece&&kingPiece.type==='K'&&gameState.penaltySquares&&gameState.penaltySquares.some(p=>p.r===r&&p.c===c&&p.color===WHITE)){objSpeak('your king cannot take that piece. penalty rules.');return;}
-      makeMove(selected,{r,c},move.special);hintMove=null;renderBoard();turn=BLACK;
-      document.getElementById('status').textContent='obj thinking...';document.getElementById('status').style.color='#5fa8d3';
-      setTimeout(()=>{aiMove();turn=WHITE;},500+Math.random()*400);selected=null;validMoves=[];return;
-    }
-    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();return;}
-    selected=null;validMoves=[];renderBoard();
-  }else{
-    if(piece&&piece.color===WHITE){selected={r,c};validMoves=getLegalMoves(r,c,board);renderBoard();}
-  }
-}
-// ===== BOOK UI =====
-// ... (book UI code)
-// ===== NEW GAME =====
-function newGame(){
-  board=initBoard();turn=WHITE;selected=null;validMoves=[];lastMove=null;gameOver=false;moveHistory=[];castling={wK:true,wQ:true,bK:true,bQ:true};enPassant=null;capturedPieces={w:[],b:[]};moveCount=0;hintMove=null;
-  gameState={bishopTeleport:false,knightQueen:0,pawnBackwards:false,rookPhase:0,extraMove:false,boardFlip:false,pieceSwap:false,queenSteal:false,freePromotion:false,knightJump:false,bishopLaser:false,rookLaser:false,kingRampage:false,pawnSprint:false,randomVanish:false,mirrorMove:false,chaosBoard:false,doubleAgent:false,penaltySquares:[]};
-  activeMutations=[];objCheating=false;playerCheating=false;objCheatType=null;
-  document.getElementById('ruleLog').innerHTML='';document.getElementById('status').textContent='your move (white)';document.getElementById('status').style.color='#9fd4ff';
-  objSpeak(objLines[0]);updateRulebook();renderBoard();
-}
+
 // ===== EVENTS =====
 document.getElementById('undoBtn').addEventListener('click',undoMove);
 document.getElementById('hintBtn').addEventListener('click',getHint);
