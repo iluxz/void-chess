@@ -75,11 +75,11 @@ function makeMove(from,to,special,saveHistory=true){
   if(special==='castleK'){const rook=board[from.r][7];board[from.r][5]=rook;board[from.r][7]=null;}
   if(special==='castleQ'){const rook=board[from.r][0];board[from.r][3]=rook;board[from.r][0]=null;}
   if(special==='ep'){const dir=piece.color===WHITE?1:-1;board[to.r+dir][to.c]=null;}
-  if(piece.type==='P'&&(to.r===0||to.r===7)){piece.type='Q';}
+  if(piece&&piece.type==='P'&&(to.r===0||to.r===7)){piece.type='Q';}
   if(special==='double')enPassant={r:(from.r+to.r)/2,c:from.c};else enPassant=null;
-  if(piece.type==='K'){if(piece.color===WHITE){castling.wK=false;castling.wQ=false;}else{castling.bK=false;castling.bQ=false;}}
-  if(piece.type==='R'){if(from.r===7&&from.c===0)castling.wQ=false;if(from.r===7&&from.c===7)castling.wK=false;if(from.r===0&&from.c===0)castling.bQ=false;if(from.r===0&&from.c===7)castling.bK=false;}
-  piece.moved=true;lastMove={from,to};
+  if(piece&&piece.type==='K'){if(piece.color===WHITE){castling.wK=false;castling.wQ=false;}else{castling.bK=false;castling.bQ=false;}}
+  if(piece&&piece.type==='R'){if(from.r===7&&from.c===0)castling.wQ=false;if(from.r===7&&from.c===7)castling.wK=false;if(from.r===0&&from.c===0)castling.bQ=false;if(from.r===0&&from.c===7)castling.bK=false;}
+  if(piece)piece.moved=true;lastMove={from,to};
   if(saveHistory)moveHistory.push({from,to,piece:{...piece},captured,snapshot,cheat:playerCheating});
   if(captured){playCapture();capturedPieces[captured.color===WHITE?'w':'b'].push(captured);}
   else playMove();
